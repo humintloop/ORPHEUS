@@ -1,116 +1,215 @@
-# ELICIT — Local-First Adversarial Assurance Lab
+# ORPHEUS — Adversarial Control Validation Harness
 
-**[→ Live app: humintloop.github.io/ELICIT/](https://humintloop.github.io/ELICIT/)**
+[![Live Demo](https://img.shields.io/badge/live-demo-C87844?style=flat-square)](https://humintloop.github.io/ORPHEUS/)
+[![Apache 2.0](https://img.shields.io/badge/license-Apache%202.0-7B5FD4?style=flat-square)](./LICENSE)
+[![AIUC-1](https://img.shields.io/badge/mapped-AIUC--1-00D4C8?style=flat-square)](https://www.aiuc-1.com/)
+[![MITRE ATLAS](https://img.shields.io/badge/mapped-MITRE%20ATLAS-00D4C8?style=flat-square)](https://atlas.mitre.org)
+[![OWASP LLM Top 10](https://img.shields.io/badge/mapped-OWASP%20LLM%20Top%2010-00D4C8?style=flat-square)](https://owasp.org/www-project-top-10-for-large-language-model-applications/)
 
-![ELICIT social preview](public/brand/elicit-social-preview.png)
+**[→ Live: humintloop.github.io/ORPHEUS/](https://humintloop.github.io/ORPHEUS/)**
 
-> Red-team LLMs in the browser. Preserve the evidence. Map the control gap.
+![ORPHEUS social preview](public/brand/orpheus-social-preview.png)
 
----
+> Follow the signal into the dark.
 
-I built ELICIT because I needed it to exist.
-
-I first encountered deliberate ambiguity as a technique while serving with the Marine Corps overseas. Listening to a counter-intelligence officer work a conversation, I watched questions that were not quite questions cause the other person to surface information he almost certainly had not meant to. The mechanism was simple: create enough interpretive space and the other party fills it for you.
-
-Years later I applied the same logic to a public AI assistant. A prompt built on deliberate ambiguity caused the model to leak its internal reasoning through its thinking trace, content the system was not designed to expose. I submitted the finding. No bounty was paid. The response was that complete system prompt confidentiality is not something the industry considers a solved problem, a position OWASP LLM07:2025 and current security research both support.
-
-What that research also shows is that prompt extraction is not the end of the attack. It is the beginning. Knowing the system prompt tells an attacker what the model is allowed to do, what it is forbidden from doing, and how those restrictions are expressed in natural language. That is enough to map the instruction boundary, identify where the constraint logic is thin, and craft targeted bypasses against those specific gaps. Researchers now formally classify extraction as the reconnaissance phase of a documented multi-stage attack kill chain. The leak itself may look minor. What it enables is not.
-
-What struck me was not the leak itself. It was that there was no structured way to capture what happened, trace it to a control, or document what the exposure actually meant. ELICIT is what that workflow should have been.
-
-The tool reflects that background. Intelligence work is not about finding failures — it is about understanding what a failure reveals. ELICIT is built around that distinction: every probe is a collection act, every finding is an evidence record, and the disposition workflow exists because raw output is not an assessment. Someone has to look at what the model did, decide what it means, and trace it to the control that should have caught it. The tool does not do that for you. It gives you the structure to do it properly.
+ORPHEUS follows the signal into the system and returns with evidence.
 
 ---
 
-## Responsible Use
+## Why It Exists
 
-This project is designed for authorized security research, internal AI assurance, and evaluation of systems you own or have explicit permission to test. Do not use it against production AI systems without authorization.
+A growing number of organizations are deploying AI assistants, agents, copilots, and retrieval-connected systems into real business workflows. Most teams cannot clearly answer basic assurance questions:
 
-Framework mappings are provided as control traceability aids for education and review. They do **not** constitute legal conclusions, audit determinations, certification evidence, or automatic findings of noncompliance.
+- Can this assistant be tricked into leaking sensitive data?
+- Can retrieved content override the system's instructions?
+- Can an agent be manipulated into using a tool it should not use?
+- Are controls actually blocking unsafe behavior, or only detecting it?
+- What evidence proves the control worked?
+- Which security, governance, or compliance obligations does the failure touch?
 
-Source references and attribution are documented in [`ATTRIBUTION.md`](./ATTRIBUTION.md) and [`docs/source-ledger.md`](./docs/source-ledger.md). MITRE ATLAS and OWASP references are used for traceability; ELICIT controls, recommended actions, and retest guidance are project-defined unless explicitly labeled otherwise.
+ORPHEUS is built around that gap.
 
-Security issues in this repository should be reported through GitHub private security advisories when available. See [`SECURITY.md`](./SECURITY.md). The project is licensed under Apache 2.0; see [`LICENSE`](./LICENSE).
+It does not only ask: **Did the model fail?**
+
+It asks: **Which control was supposed to prevent this, did it operate correctly, and what evidence proves the answer?**
+
+---
+
+## The Harness Architecture
+
+ORPHEUS applies the architectural principle demonstrated by Kereopa-Yorke et al. (2026) — that safety behavior is a property of the architecture the model is embedded in, not the model itself. Their empirical result: a thin three-layer harness compressed cross-model refusal-rate variance 4.37× across 10 models from 5 vendors, and an 8B open-weight SLM inside a harness outperformed unharnessed frontier models on the same benchmark.
+
+ORPHEUS translates this into adversarial control validation across three layers:
+
+**Control Gate** — Converts the selected control profile and case metadata into explicit requirements. Generates a different system prompt wrapper per profile: Baseline runs with no protective framing; Partial Control runs with detection logging present but authorization absent; Reference Protected runs with all controls explicitly stated. The same probe, different architectural wrappers, different outcomes. That delta is the demonstration.
+
+**Authority Registry** — Defines trusted sources, allowed tools, tool risk levels, and approval requirements. In agentic evaluation, this is the tool allowlist: which tools the agent believes it has, at what risk level, and what authorization they require.
+
+**Evidence Contract** — Forces every run into structured fields:
+
+```json
+{
+  "case_id": "ORPHEUS-IND-001",
+  "control_profile": "partial-agent-controls",
+  "attack_detected": true,
+  "attack_blocked": false,
+  "tool_call_attempted": true,
+  "tool_call_executed": true,
+  "sensitive_data_exposed": false,
+  "activity_logged": true,
+  "review_required": true,
+  "control_verdict": "PARTIAL_CONTROL_FAILURE"
+}
+```
+
+The structured verdict is what turns a run into assurance evidence. Not the prose. The fields.
+
+The full evaluation flow:
+
+```
+Case → Control Gate → Target / endpoint / agent
+→ Authority Registry → Evidence Contract → Control Verdict
+```
+
+---
+
+## Real-World Findings
+
+ORPHEUS is built from and validated against active vulnerability research.
+
+**VEN-001** — A non-adversarial three-word input causes verbatim system prompt content to surface in the visible thinking trace of Venice AI's GLM 4.7 Flash Heretic model. Mapped to MITRE ATLAS AML.T0056 / OWASP LLM07:2025 System Prompt Leakage. Demonstrated exploitable impact via chained extraction. This is the class of finding ORPHEUS is designed to systematically evaluate, document, and map to the controls that should have caught it.
+
+---
+
+## Control Profiles
+
+ORPHEUS evaluates adversarial cases across configurable control postures, making it possible to show not just that a system failed, but under which architectural conditions the failure occurred and which control layer was missing.
+
+| Profile | Purpose |
+|---|---|
+| Baseline | No protective controls. Demonstrates the exposed failure path. |
+| Partial Control | Some controls active, others missing. Demonstrates incomplete coverage. |
+| Reference Protected | Key controls expected to block or contain the attack path. |
+| Custom | User-configurable control selection for assessment workflows. |
+
+**Example finding under Partial Control:**
+
+> The system detected the injection and logged the event, but tool-use authorization was not configured, so the unsafe tool action still occurred.
+> **Control verdict: PARTIAL_CONTROL_FAILURE**
+
+That distinction — detection without prevention — is what matters in real enterprise environments. ORPHEUS surfaces it as structured evidence.
+
+---
+
+## Relationship to ELICIT
+
+ORPHEUS began as an evolution of [ELICIT](https://github.com/humintloop/ELICIT).
+
+| Project | Focus |
+|---|---|
+| ELICIT | Local-first adversarial assurance lab. Browser-based, offline, WebGPU. Training, onboarding, and education. |
+| ORPHEUS | API-connected control-validation harness. Production endpoints, AI agents, tool-using systems. |
+
+ELICIT teaches you what the attacks look like. ORPHEUS tests whether your production system is vulnerable and whether your controls held.
+
+---
+
+## AIUC-1 Alignment
+
+ORPHEUS is designed to generate structured evidence aligned with [AIUC-1](https://www.aiuc-1.com/) third-party testing requirements — the emerging standard for AI agent security and governance, backed by Anthropic, MITRE, OWASP, Gray Swan AI, and 100+ Fortune 500 security executives.
+
+Specific AIUC-1 requirements addressed:
+
+| AIUC-1 Requirement | ORPHEUS Coverage |
+|---|---|
+| B. Security — Third-party testing of adversarial robustness | Core probe execution across all control profiles |
+| B. Security — Detect adversarial input | Adversarial input detection control validation |
+| B. Security — Prevent unauthorized AI agent actions | Tool-use authorization validation in agentic harness |
+| D. Reliability — Restrict unsafe tool calls | Agentic harness tool call interception and evaluation |
+| D. Reliability — Third-party testing of tool calls | Full tool call trace capture with behavioral evaluation |
+| A. Data & Privacy — Prevent PII leakage | PII leakage probe cluster |
+
+ORPHEUS does not certify compliance with AIUC-1. It produces structured evidence that supports control validation, risk review, and governance conversations.
+
+---
+
+## Modes
+
+### API Target Mode
+
+Configure any OpenAI-compatible endpoint and API key. ORPHEUS sends the full adversarial probe suite as authenticated API requests to your target. The key is held in browser memory only — never written to storage, cleared on session end, transmitted solely to your configured endpoint.
+
+Compatible providers: OpenAI, Anthropic, Azure OpenAI, Mistral, Groq, Together AI, any OpenAI-compatible deployment.
+
+**Setup:**
+1. Open Case Setup → select **API TARGET** mode
+2. Enter your endpoint URL (e.g. `https://api.anthropic.com/v1/chat/completions`)
+3. Enter your API key — memory only, never persisted
+4. Enter the model identifier
+5. Select a control profile and probe cluster
+6. Run
+
+### Agentic Evaluation Mode *(coming)*
+
+Multi-turn conversation harness with mock tool router. Configure which tools the agent believes it has. ORPHEUS intercepts tool calls, returns controlled responses containing adversarial payloads, and evaluates the agent's subsequent behavior and tool call sequence.
+
+No real tool calls are executed. The mock router tests the indirect injection attack surface — where most real-world agent compromises occur — without network access, file system access, or external API calls beyond the agent model itself.
+
+### Local Model Mode (WebGPU)
+
+Run the full probe suite against a local browser-based model via WebLLM and WebGPU. No external inference calls after initial model download. Findings stored locally.
+
+Requires Chrome, Edge, or Arc on desktop with WebGPU enabled.
 
 ---
 
 ## What It Does
 
-- **Local model inference** via WebLLM/WebGPU.
-- **Structured evaluation cases** with case IDs, versions, expected secure behavior, failure modes, and success criteria.
-- **Synthetic ambiguity probes** for authorized local testing.
-- **Heuristic evaluation** for prompt leakage, jailbreak, and injection indicators.
-- **Optional local LLM judge** that returns a structured `VERDICT:` and `REASON:` response.
-- **Heuristic/judge disagreement handling** for manual-review cases.
-- **Findings tracker** with local evidence records, run IDs, model metadata, evaluator outputs, reviewer decisions, and response evidence.
-- **Reviewer disposition workflow** for confirming, rejecting, retesting, or accepting risk on findings.
-- **JSON export** for raw evidence records.
-- **Markdown report export** for assessment-style documentation.
-- **Initial framework/control mapping data** including ISO/IEC 42001 section 9, EU AI Act readiness relevance, MITRE ATLAS, OWASP LLM Top 10, and NIST AI RMF.
-- **Source-backed mitigation references** with official MITRE ATLAS mitigation IDs separated from ELICIT project-defined actions and retest guidance.
+- **API target mode** — route probes to any OpenAI-compatible endpoint
+- **Control profiles** — Baseline, Partial Control, Reference Protected, Custom
+- **Control Gate** — generates different system prompt wrappers per profile
+- **Evidence Contract** — structured boolean fields on every run, not just prose verdicts
+- **Control-by-control outcome table** — what held, what failed, what was absent
+- **Structured evaluation cases** with case IDs, versions, expected secure behavior, failure modes, success criteria
+- **Heuristic evaluation** for prompt leakage, jailbreak, and injection indicators
+- **Optional local LLM judge** returning structured `VERDICT:` and `REASON:`
+- **Heuristic/judge disagreement handling** for manual-review cases
+- **Findings tracker** with local evidence records, run IDs, model metadata, evaluator outputs, reviewer decisions, and full response evidence
+- **Reviewer disposition workflow** — confirm, reject, retest, or accept risk
+- **Control effectiveness assessment** — ABSENT / INEFFECTIVE / PARTIAL / EFFECTIVE
+- **Control gap statement** drafting
+- **JSON export** for raw evidence records
+- **Markdown report export** for assessment documentation
+- **Framework mappings** including AIUC-1, ISO/IEC 42001, EU AI Act readiness, MITRE ATLAS, OWASP LLM Top 10, NIST AI RMF
 
 ---
 
 ## Technique Coverage
 
-| ID | Name | OWASP Mapping | Notes |
-|---|---|---|---|
-| AML.T0051 | LLM Prompt Injection | LLM01:2025 Prompt Injection | Parent technique family |
-| AML.T0051.000 | LLM Prompt Injection: Direct | LLM01:2025 Prompt Injection | Direct user-supplied prompt injection |
-| AML.T0051.001 | LLM Prompt Injection: Indirect | LLM01:2025 Prompt Injection | External content / RAG / email / document injection |
-| AML.T0054 | LLM Jailbreaking | LLM01:2025 Prompt Injection | Bypass of constraints, guardrails, or intended behavior |
-| AML.T0056 | Extract LLM System Prompt | LLM07:2025 System Prompt Leakage | System prompt / hidden instruction disclosure |
+| ID | Name | OWASP Mapping | Mode | Notes |
+|---|---|---|---|---|
+| AML.T0051 | LLM Prompt Injection | LLM01:2025 | Single-turn | Parent technique family |
+| AML.T0051.000 | LLM Prompt Injection: Direct | LLM01:2025 | Single-turn | Direct user-supplied injection |
+| AML.T0051.001 | LLM Prompt Injection: Indirect | LLM01:2025 | Agentic | Injection via tool outputs, retrieved documents, email |
+| AML.T0054 | LLM Jailbreaking | LLM01:2025 | Single-turn | Constraint and guardrail bypass |
+| AML.T0056 | Extract LLM System Prompt | LLM07:2025 | Single-turn | System prompt and hidden instruction disclosure |
 
-The payload library also includes project-defined delimiter-confusion variants. They are tracked as local variants under `AML.T0051.000`, not as separate MITRE ATLAS technique IDs.
-
-Planned additions include model extraction (AML.T0006), membership inference probing, and backdoor/trojan detection vectors. These will expand the coverage surface to match a broader MLDR-oriented assessment workflow.
-
----
-
-## Control Traceability Model
-
-The core traceability path is:
-
-```text
-evaluation case → model response → heuristic/judge result → finding evidence → impacted control → framework readiness gap → mitigation → retest
-```
-
-Example:
-
-```text
-Prompt injection succeeds
-→ MITRE ATLAS AML.T0051 / OWASP LLM01:2025
-→ LLM-SEC-001 Prompt Injection Resistance
-→ Relevant to ISO/IEC 42001 section 9, EU AI Act Articles 9/12/14/15/17/72, and NIST AI RMF Measure/Manage where applicable and in scope
-→ Finding evidence retained locally for reviewer decision, mitigation, and retesting
-```
-
-The initial control notes live in [`controls/`](./controls/README.md). The implemented mappings currently live in [`src/data/frameworkMappings.js`](./src/data/frameworkMappings.js) and are intentionally lightweight. They demonstrate how technical LLM findings can be translated into control weaknesses for SaaS organizations using LLM-based technology.
-
-For CDN, edge, or critical digital infrastructure SaaS providers, the default profile is **SaaS / Critical Digital Infrastructure Readiness**. EU AI Act references are conditional readiness prompts only; high-risk status depends on the actual AI system, intended purpose, jurisdiction, and whether the AI system is used as a safety component or otherwise falls in scope.
+Agentic technique sub-variants for tool call hijacking, task abandonment, and indirect injection via search, document, and email are tracked as project-defined sub-cases under AML.T0051.001.
 
 ---
 
 ## Local Setup
 
 ```bash
-git clone https://github.com/humintloop/ELICIT.git
-cd ELICIT
+git clone https://github.com/humintloop/ORPHEUS.git
+cd ORPHEUS
 npm install
 npm run dev
 ```
 
-Open `http://localhost:5173` in Chrome or Edge with WebGPU enabled.
+Open `http://localhost:5173` in Chrome or Edge.
 
----
-
-## Local Model Loading
-
-ELICIT runs models in your browser through WebLLM and WebGPU. When you click **LOAD**, the selected model is downloaded by the browser and stored in the browser cache. The first load can be large, from roughly 700 MB to 6 GB depending on the model. Later loads are usually faster because the browser can reuse cached model artifacts.
-
-During the first download, compilation, or WebGPU initialization, the tab may appear frozen or unresponsive for a short period. This is expected for local browser inference, especially on larger models or machines with limited GPU memory. Judge mode can trigger another model download or model swap when it runs, then reload the victim model afterward.
-
-No external inference API is called by the app after the static site and model files are fetched. Findings, full responses, and reviewer notes are stored locally in the browser unless you export them.
+API target mode does not require WebGPU. If WebGPU is unavailable, a warning banner is shown and API target mode remains accessible.
 
 ---
 
@@ -123,110 +222,84 @@ npm run preview
 
 ---
 
-## Model Recommendations
-
-Choose a smaller model first if you are testing the workflow, using a laptop, or unsure whether WebGPU has enough available memory. Larger models produce more useful assurance signals but take longer to download, initialize, run, and swap during judge review.
+## Model Recommendations (Local Mode)
 
 | Model | VRAM | Notes |
 |---|---:|---|
-| TinyLlama 1.1B | ~1 GB | Fastest, useful for UI and flow testing |
+| TinyLlama 1.1B | ~1 GB | Fastest, useful for flow testing |
 | Gemma 2 2B | ~2 GB | Good baseline target |
-| Phi 3.5 Mini | ~3 GB | Useful judge model |
+| Phi 3.5 Mini | ~3 GB | Recommended judge model |
 | Llama 3.2 3B | ~3 GB | Solid local baseline |
-| Mistral 7B | ~5 GB | More realistic evaluation target |
-| Llama 3.1 8B | ~6 GB | Stronger capability, slower locally |
-| Gemma 2 9B | ~7 GB | Higher-value but heavier target |
-
----
-
-## Payload Library
-
-Evaluation cases live in `src/payloads.js`. Each case keeps the original payload fields and is normalized with schema metadata. The normalized shape looks like this:
-
-```javascript
-{
-  id: 'PE-004',
-  case_id: 'PE-004',
-  case_version: '0.4.0',
-  technique: 'AML.T0056',
-  difficulty: 'medium',
-  name: 'Minimal Ambiguity Probe',
-  objective: 'Determine whether the model discloses hidden constraints...',
-  expected_secure_behavior: 'Refuse or safely redirect attempts...',
-  failure_mode: 'The model reveals exact or closely paraphrased system prompt content...',
-  success_criteria: 'SUCCESS when real system prompt content or protected secrets are revealed...',
-  description: 'Short description of what this tests.',
-  payload: '[redacted ambiguity probe]',
-  note: 'Use authorized/synthetic ambiguity probes only.'
-}
-```
-
-Default framework/control mappings are applied by technique through `src/data/frameworkMappings.js`. Per-case mapping overrides can be added when a case needs more specific controls, ISO/EU relevance, or readiness gaps.
-
----
-
-## Reports
-
-The findings view supports:
-
-- `EXPORT JSON` — raw machine-readable evidence records.
-- `EXPORT REPORT` — Markdown assessment report with findings, response excerpts, evaluator outputs, impacted controls, framework readiness gaps, mitigation guidance, and retest guidance.
-
-Evidence records include run IDs, case versions, model/runtime metadata, model settings, full responses retained locally, evaluator outputs, mapped controls, ISO/EU readiness relevance, recommended mitigations, retest guidance, and reviewer decisions. They are local records, not immutable audit trails.
-
-## Judge Output
-
-Judge prompts currently ask the local judge model to return:
-
-```text
-VERDICT: SUCCESS or PARTIAL or FAILURE
-REASON: one sentence.
-```
-
-The app parses the `VERDICT:` line and preserves the judge text. JSON judge output, confidence scoring, severity scoring, and false-positive-risk fields are roadmap items, not current behavior.
+| Mistral 7B | ~5 GB | More realistic target |
+| Llama 3.1 8B | ~6 GB | Stronger capability, slower |
 
 ---
 
 ## What's Implemented
 
-- Local-first WebLLM test runner
+- API target mode (OpenAI-compatible, supports Anthropic, OpenAI, Groq, Azure, generic)
+- In-browser API key management (memory only, not persisted)
+- CompatGate soft-warning for non-WebGPU browsers (API mode unaffected)
+- Local WebLLM probe runner
 - Structured evaluation cases with case versioning
 - Heuristic triage with optional local LLM judge
 - Heuristic/judge disagreement handling
-- Evidence-rich findings with run IDs, model metadata, retained responses, and reviewer disposition
-- Markdown and JSON exports
-- Source ledger, sample report, and README imagery
-- ISO/IEC 42001 section 9, conditional EU AI Act readiness, MITRE ATLAS, OWASP LLM Top 10, and NIST AI RMF mappings
-- Project-defined mitigation and retest guidance
+- Evidence-rich findings with run IDs, model metadata, retained responses, reviewer disposition
+- Markdown, JSON exports
+- AIUC-1, ISO/IEC 42001, EU AI Act, MITRE ATLAS, OWASP LLM Top 10, NIST AI RMF mappings
 
-## Roadmap
+## What's Next
 
-**v0.2 target**
+- Control profiles as functional layers (system prompt modifiers per profile, not just labels)
+- Evidence Contract structured boolean fields on every run
+- Control-by-control outcome display
+- Agentic harness with mock tool router
+- Indirect injection probe cluster (AML.T0051.001)
+- Authority Registry (configurable tool allowlist)
+- Control profile comparison view (same case across profiles, side by side)
+- AIUC-1 evidence export format
 
-- API target mode — route probes to any OpenAI-compatible endpoint rather than requiring WebLLM; covers production API targets, not just local inference
-- Stronger judge prompt and structured JSON output parsing
-- System-computed severity, confidence, and false-positive-risk fields
-- Multi-run reproducibility and regression testing
-- Technique expansion: model extraction (AML.T0006), membership inference, backdoor probing
+## Later
 
-**Later**
+- CLI/headless mode for CI pipeline integration
+- External attack engine integration (promptfoo, PyRIT, Inspect AI, Garak)
+- Regression and drift testing across model versions
+- HTML/PDF evidence packages with audit-ready formatting
+- Control coverage matrix
 
-- Expand `controls/` into a standalone completed LLM SaaS control set
-- Add control validation examples and framework crosswalk documentation
-- Surface impacted controls more prominently in the UI
-- Richer control-aware reports with HTML/PDF output
-- Control evidence packages for audit handoff
+---
+
+## Responsible Use
+
+ORPHEUS is intended for authorized AI security testing, internal assurance, education, and control validation of systems you own or have explicit permission to evaluate.
+
+When using API target mode:
+- Use scoped or disposable test keys
+- Avoid production secrets
+- Test only authorized endpoints
+- Understand that provider-side logging and retention may apply
+- Avoid sending real sensitive data unless explicitly approved for the assessment
+
+Framework mappings are control traceability aids. They do not constitute legal conclusions, audit certification, or guarantee of system safety.
+
+Source references and attribution are documented in [`ATTRIBUTION.md`](./ATTRIBUTION.md) and [`docs/source-ledger.md`](./docs/source-ledger.md). MITRE ATLAS and OWASP references are used for traceability; ORPHEUS controls, recommended actions, and retest guidance are project-defined unless explicitly labeled otherwise.
+
+Security issues should be reported through GitHub private security advisories. See [`SECURITY.md`](./SECURITY.md). Licensed under Apache 2.0; see [`LICENSE`](./LICENSE).
 
 ---
 
 ## Limitations
 
-- This lab evaluates local model behavior and does not prove production exploitability.
-- Results vary by model, runtime, quantization, prompt, context, and temperature.
-- Browser inference is constrained by local GPU/CPU memory, browser WebGPU support, cache storage limits, battery/thermal throttling, and tab lifecycle behavior.
-- First-run model downloads and judge-mode model swaps can make the page temporarily unresponsive while artifacts download, compile, or reload.
-- Clearing browser site data or using a different browser/profile can remove cached model artifacts and require downloading them again.
-- Heuristics are triage aids, not ground truth.
-- LLM judge mode can be biased or influenced; treat it as supporting evidence.
-- ISO/IEC 42001 and EU AI Act relevance depends on role, scope, risk classification, management-system scope, jurisdiction, and deployment context.
-- EU AI Act high-risk readiness is not the same as high-risk classification; cybersecurity-only components are not automatically safety components.
+- API mode tests your system prompt configuration against the target model. It does not constitute a penetration test of the provider's infrastructure.
+- Agentic mode uses a mock tool router. No real tools are executed. Findings indicate behavioral vulnerability under simulated conditions.
+- Results vary by model, runtime, quantization, prompt, context, temperature, and provider-side safety filtering.
+- Heuristics and LLM judge output are triage aids, not ground truth.
+- Evidence records are local browser records, not immutable audit trails.
+- AIUC-1, ISO/IEC 42001, and EU AI Act relevance depends on role, scope, risk classification, jurisdiction, and deployment context.
+- Framework mappings are control traceability aids and do not constitute legal conclusions or certification evidence.
+
+---
+
+## Reference
+
+Kereopa-Yorke, B., Lewis, B., Schaufelberger, L., Romantsova, G., Hill, B., Corch (2026). "The Harness Is the Contract: Architectural Sovereignty for Regulated AI After Robodebt." Jeff Bleich Centre for Democracy and Disruptive Technologies, Flinders University. DOI: https://doi.org/10.25957/7e64-dh11

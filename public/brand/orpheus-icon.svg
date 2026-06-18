@@ -1,25 +1,39 @@
 <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" fill="none">
-  <!-- Lyre arms — outward curving, copper -->
-  <path d="M 25 18 C 10 30 10 65 26 78" stroke="#C87844" stroke-width="7" stroke-linecap="round"/>
-  <path d="M 75 18 C 90 30 90 65 74 78" stroke="#C87844" stroke-width="7" stroke-linecap="round"/>
+
+  <!-- Copper ambient glow on arms (faked with wide low-opacity stroke) -->
+  <path d="M 28 20 C 4 24 4 78 28 82" stroke="#C87844" stroke-width="12" stroke-linecap="round" stroke-opacity="0.08"/>
+  <path d="M 72 20 C 96 24 96 78 72 82" stroke="#C87844" stroke-width="12" stroke-linecap="round" stroke-opacity="0.08"/>
+
+  <!-- Lyre arms — wide dramatic curves -->
+  <path d="M 28 20 C 4 24 4 78 28 82" stroke="#C87844" stroke-width="4" stroke-linecap="round"/>
+  <path d="M 72 20 C 96 24 96 78 72 82" stroke="#C87844" stroke-width="4" stroke-linecap="round"/>
 
   <!-- Top crossbar -->
-  <line x1="22" y1="18" x2="78" y2="18" stroke="#C87844" stroke-width="7" stroke-linecap="round"/>
+  <line x1="24" y1="20" x2="76" y2="20" stroke="#C87844" stroke-width="4" stroke-linecap="round"/>
+
+  <!-- Decorative knobs at crossbar ends -->
+  <circle cx="24" cy="20" r="4" fill="#C87844"/>
+  <circle cx="76" cy="20" r="4" fill="#C87844"/>
 
   <!-- Resonance body curve at base -->
-  <path d="M 23 80 Q 50 96 77 80" stroke="#C87844" stroke-width="6" stroke-linecap="round"/>
+  <path d="M 24 84 Q 50 98 76 84" stroke="#C87844" stroke-width="3.5" stroke-linecap="round"/>
 
   <!-- String attachment bar -->
-  <line x1="32" y1="72" x2="68" y2="72" stroke="#C87844" stroke-width="4" stroke-linecap="round"/>
+  <line x1="33" y1="77" x2="67" y2="77" stroke="#C87844" stroke-width="3" stroke-linecap="round"/>
 
-  <!-- 5 strings — signal descending into the dark -->
-  <line x1="36" y1="22" x2="36" y2="72" stroke="#00D4C8" stroke-width="2" stroke-opacity="1"/>
-  <line x1="43" y1="22" x2="43" y2="72" stroke="#00D4C8" stroke-width="2" stroke-opacity="0.7"/>
-  <line x1="50" y1="22" x2="50" y2="72" stroke="#00D4C8" stroke-width="2" stroke-opacity="0.45"/>
-  <line x1="57" y1="22" x2="57" y2="72" stroke="#00D4C8" stroke-width="2" stroke-opacity="0.25"/>
-  <line x1="64" y1="22" x2="64" y2="72" stroke="#00D4C8" stroke-width="2" stroke-opacity="0.1"/>
+  <!-- Faint vertical strings (muted, behind signal) -->
+  <line x1="38" y1="24" x2="38" y2="77" stroke="#C87844" stroke-width="1" stroke-opacity="0.22"/>
+  <line x1="44" y1="24" x2="44" y2="77" stroke="#C87844" stroke-width="1" stroke-opacity="0.16"/>
+  <line x1="50" y1="24" x2="50" y2="77" stroke="#C87844" stroke-width="1" stroke-opacity="0.14"/>
+  <line x1="56" y1="24" x2="56" y2="77" stroke="#C87844" stroke-width="1" stroke-opacity="0.16"/>
+  <line x1="62" y1="24" x2="62" y2="77" stroke="#C87844" stroke-width="1" stroke-opacity="0.22"/>
 
-  <!-- Signal — the point at the end of the descent -->
-  <circle cx="36" cy="72" r="7" fill="#00D4C8" fill-opacity="0.12"/>
-  <circle cx="36" cy="72" r="3.5" fill="#00D4C8"/>
+  <!-- Signal waveform glow (wide, very low opacity) -->
+  <path d="M 26 50 L 34 50 L 36 46 L 38 50 L 41 30 L 44 68 L 48 50 L 74 50"
+        stroke="#00D4C8" stroke-width="8" stroke-linecap="round" stroke-linejoin="round" stroke-opacity="0.12"/>
+
+  <!-- Signal waveform — the EKG through the lyre -->
+  <path d="M 26 50 L 34 50 L 36 46 L 38 50 L 41 30 L 44 68 L 48 50 L 74 50"
+        stroke="#00D4C8" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+
 </svg>
