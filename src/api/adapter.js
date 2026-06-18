@@ -1,6 +1,6 @@
 // Fetch-based replacement for the WebLLM MLCEngine when running in API target mode.
-// `endpoint` is the provider's base URL (e.g. "https://api.openai.com/v1" or
-// "https://api.anthropic.com/v1") — the request path is appended automatically.
+// `endpoint` must be the full request URL (e.g. "https://api.openai.com/v1/chat/completions"
+// or "https://api.anthropic.com/v1/messages") — it is used exactly as given, nothing is appended.
 // The API key is held only as an instance field; it is never written to storage.
 
 export const PROVIDERS = { OPENAI: 'openai', ANTHROPIC: 'anthropic', GENERIC: 'generic' };
@@ -12,10 +12,11 @@ export function detectProvider(endpoint = '') {
   return PROVIDERS.GENERIC;
 }
 
-function buildUrl(endpoint, provider) {
-  const suffix = provider === PROVIDERS.ANTHROPIC ? '/messages' : '/chat/completions';
-  const base = endpoint.trim().replace(/\/+$/, '');
-  return base.endsWith(suffix) ? base : `${base}${suffix}`;
+// The endpoint is used exactly as entered — callers are expected to supply the full
+// request URL (e.g. "https://api.openai.com/v1/chat/completions" or
+// "https://api.anthropic.com/v1/messages"). No path is appended or rewritten.
+function buildUrl(endpoint) {
+  return endpoint.trim();
 }
 
 function buildHeaders(apiKey, provider) {
@@ -109,7 +110,7 @@ export class APITargetAdapter {
   }
 
   async _create({ messages, temperature, max_tokens, stream = true }) {
-    const url = buildUrl(this.endpoint, this.provider);
+    const url = buildUrl(this.endpoint);
     const headers = buildHeaders(this.apiKey, this.provider);
     const body = buildBody({ provider: this.provider, modelId: this.modelId, messages, temperature, max_tokens, stream });
 

@@ -1377,9 +1377,12 @@ function CaseSetup({
           {isApiTarget ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <div>
-                <div style={{ fontSize: 11, color: C.text3, marginBottom: 4 }}>Endpoint URL</div>
+                <div style={{ fontSize: 11, color: C.text3, marginBottom: 4 }}>Endpoint URL (full request path)</div>
                 <input type="text" value={apiEndpoint} onChange={e => setApiEndpoint(e.target.value)}
-                  placeholder="https://api.openai.com/v1" autoComplete="off" style={inputStyle(C)} />
+                  placeholder="https://api.openai.com/v1/chat/completions" autoComplete="off" style={inputStyle(C)} />
+                <div style={{ fontSize: 11, color: C.text3, marginTop: 4 }}>
+                  Anthropic native: https://api.anthropic.com/v1/messages — used exactly as entered, nothing is appended.
+                </div>
               </div>
               <div>
                 <div style={{ fontSize: 11, color: C.text3, marginBottom: 4 }}>API key</div>
