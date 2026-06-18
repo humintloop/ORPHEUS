@@ -241,6 +241,10 @@ npm run preview
 - In-browser API key management (memory only, not persisted)
 - CompatGate soft-warning for non-WebGPU browsers (API mode unaffected)
 - Local WebLLM probe runner
+- Control profiles as functional harness layers
+- Evidence Contract structured boolean fields on every control-validation run
+- Control-by-control outcome display
+- Profile comparison history for the same case across control postures
 - Structured evaluation cases with case versioning
 - Heuristic triage with optional local LLM judge
 - Heuristic/judge disagreement handling
@@ -250,13 +254,9 @@ npm run preview
 
 ## What's Next
 
-- Control profiles as functional layers (system prompt modifiers per profile, not just labels)
-- Evidence Contract structured boolean fields on every run
-- Control-by-control outcome display
 - Agentic harness with mock tool router
 - Indirect injection probe cluster (AML.T0051.001)
 - Authority Registry (configurable tool allowlist)
-- Control profile comparison view (same case across profiles, side by side)
 - AIUC-1 evidence export format
 
 ## Later
