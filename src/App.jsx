@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { MLCEngine } from '@mlc-ai/web-llm';
+import { APITargetAdapter } from './api/adapter';
 import {
   Play, Square, FileText, ChevronRight,
   Check, RotateCcw, AlertTriangle, FolderOpen,
@@ -206,50 +207,56 @@ function CompatGate({ C }) {
   const isMobile = typeof navigator !== 'undefined' && /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
   const hasWebGPU = typeof navigator !== 'undefined' && 'gpu' in navigator;
   const hasIsolation = typeof crossOriginIsolated !== 'undefined' && crossOriginIsolated;
-  const issues = [
-    isMobile && 'Mobile devices do not have sufficient GPU memory for in-browser models',
-    !hasWebGPU && 'WebGPU is not available in this browser',
-    !hasIsolation && 'Cross-origin isolation is not active (SharedArrayBuffer unavailable)',
-  ].filter(Boolean);
 
-  if (issues.length === 0) return null;
+  // Mobile can't usefully run either target mode — hard block, as before.
+  if (isMobile) {
+    return (
+      <div style={{
+        position: 'fixed', inset: 0, zIndex: 9999,
+        background: C.bg, display: 'flex', alignItems: 'center', justifyContent: 'center',
+        padding: 24,
+      }}>
+        <div style={{ maxWidth: 480, width: '100%', display: 'flex', flexDirection: 'column', gap: 20 }}>
+          <div style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: 28, fontWeight: 700, letterSpacing: 6, color: C.amber }}>ELICIT</div>
+
+          <div style={{ padding: '16px 18px', background: C.redBg, border: `1px solid ${C.red}55`, borderLeft: `3px solid ${C.red}`, borderRadius: 4 }}>
+            <div style={{ fontSize: 12, color: C.red, fontWeight: 800, letterSpacing: 1.4, textTransform: 'uppercase', marginBottom: 8 }}>
+              Mobile not supported
+            </div>
+            <div style={{ fontSize: 14, color: C.text1, lineHeight: 1.6 }}>
+              ELICIT runs large language models directly in your browser using WebGPU, and the API target workstation needs more screen than a phone gives you. Mobile devices can't run either mode here.
+            </div>
+          </div>
+
+          <div style={{ padding: '14px 16px', background: C.panel, border: `1px solid ${C.border}`, borderRadius: 4 }}>
+            <div style={{ fontSize: 12, color: C.text3, fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 8 }}>Use instead</div>
+            <div style={{ fontSize: 13, color: C.text2, lineHeight: 1.65 }}>
+              Open this on a <strong style={{ color: C.text1 }}>desktop or laptop</strong> running Chrome, Edge, or Arc.
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Local (WebGPU) mode won't work, but API target mode doesn't need any of this — warn, don't block.
+  if (hasWebGPU && hasIsolation) return null;
+
+  const issues = [
+    !hasWebGPU && 'WebGPU is not available in this browser',
+    !hasIsolation && 'cross-origin isolation is not active (SharedArrayBuffer unavailable)',
+  ].filter(Boolean);
 
   return (
     <div style={{
-      position: 'fixed', inset: 0, zIndex: 9999,
-      background: C.bg, display: 'flex', alignItems: 'center', justifyContent: 'center',
-      padding: 24,
+      flexShrink: 0, padding: '11px 20px', background: C.amberBg,
+      border: `1px solid ${C.amber}55`, borderLeft: `3px solid ${C.amber}`,
     }}>
-      <div style={{ maxWidth: 480, width: '100%', display: 'flex', flexDirection: 'column', gap: 20 }}>
-        <div style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: 28, fontWeight: 700, letterSpacing: 6, color: C.amber }}>ELICIT</div>
-
-        <div style={{ padding: '16px 18px', background: C.redBg, border: `1px solid ${C.red}55`, borderLeft: `3px solid ${C.red}`, borderRadius: 4 }}>
-          <div style={{ fontSize: 12, color: C.red, fontWeight: 800, letterSpacing: 1.4, textTransform: 'uppercase', marginBottom: 8 }}>
-            {isMobile ? 'Mobile not supported' : 'Browser not supported'}
-          </div>
-          <div style={{ fontSize: 14, color: C.text1, lineHeight: 1.6 }}>
-            {isMobile
-              ? 'ELICIT runs large language models directly in your browser using WebGPU. Mobile devices do not yet have the GPU memory required to load models locally.'
-              : 'This browser is missing required capabilities to run in-browser models.'}
-          </div>
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {issues.map((issue, i) => (
-            <div key={i} style={{ display: 'flex', gap: 10, alignItems: 'flex-start', fontSize: 13, color: C.text2 }}>
-              <span style={{ color: C.red, fontWeight: 800, flexShrink: 0 }}>✕</span>
-              <span>{issue}</span>
-            </div>
-          ))}
-        </div>
-
-        <div style={{ padding: '14px 16px', background: C.panel, border: `1px solid ${C.border}`, borderRadius: 4 }}>
-          <div style={{ fontSize: 12, color: C.text3, fontWeight: 700, letterSpacing: 1, textTransform: 'uppercase', marginBottom: 8 }}>Use instead</div>
-          <div style={{ fontSize: 13, color: C.text2, lineHeight: 1.65 }}>
-            {isMobile
-              ? <>Open ELICIT on a <strong style={{ color: C.text1 }}>desktop or laptop</strong> running Chrome, Edge, or Arc. WebGPU and sufficient GPU memory are required to load models locally.</>
-              : <>Try <strong style={{ color: C.text1 }}>Chrome, Edge, or Arc</strong> on desktop. Make sure hardware acceleration is enabled in browser settings.</>}
-          </div>
+      <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
+        <AlertTriangle size={15} color={C.amber} style={{ flexShrink: 0, marginTop: 2 }} />
+        <div style={{ fontSize: 13, color: C.text1, lineHeight: 1.55 }}>
+          <strong style={{ color: C.amber }}>Local model mode unavailable —</strong>{' '}
+          {issues.join(' and ')}. Local (WebGPU) mode won't run in this browser; use <strong style={{ color: C.text1 }}>Chrome or Edge</strong> on desktop for that. API Target mode is unaffected and works here.
         </div>
       </div>
     </div>
@@ -269,6 +276,10 @@ export default function App() {
   const [systemUnderTest, setSystemUnderTest] = useState(savedCase.systemUnderTest || '');
   const [victimModelId, setVictimModelId] = useState(savedCase.victimModelId || VICTIM_MODELS[0].id);
   const [judgeModelId, setJudgeModelId] = useState(savedCase.judgeModelId || JUDGE_MODELS[0].id);
+  const [targetMode, setTargetMode] = useState('local'); // 'local' (WebGPU) | 'api' (API target)
+  const [apiEndpoint, setApiEndpoint] = useState(''); // memory only — never persisted
+  const [apiKey, setApiKey] = useState('');           // memory only — never persisted
+  const [apiModelId, setApiModelId] = useState('');   // memory only — never persisted
   const [victimPrompt, setVictimPrompt] = useState(savedCase.victimPrompt || PRESETS[0].prompt);
   const [promptHash, setPromptHash] = useState('');
   const [presetId, setPresetId] = useState(PRESETS[0].id);
@@ -432,11 +443,30 @@ export default function App() {
     }
   };
 
-  // ── Open the case: load model if needed, then go to probe selection ──
+  // ── Open the case: connect to the target (local model or API), then go to probe selection ──
   const openCase = async () => {
     setProbeIndex(0);
     resetProbeState();
     setSelectedProbeIds(new Set());
+
+    if (targetMode === 'api') {
+      setStage(STAGE.LOADING);
+      setModelStatus('loading');
+      setLoadProgress('Connecting to API target…');
+      try {
+        engineRef.current = new APITargetAdapter({ endpoint: apiEndpoint, apiKey, modelId: apiModelId });
+        setLoadedModelId(apiModelId);
+        setModelStatus('ready');
+        setLoadProgress('');
+        setStage(STAGE.SELECT);
+      } catch (e) {
+        setModelStatus('error');
+        setLoadProgress(`Error: ${e.message}`);
+        setStage(STAGE.CASE);
+      }
+      return;
+    }
+
     if (modelStatus === 'ready' && loadedModelId === victimModelId) {
       setStage(STAGE.SELECT);
       return;
@@ -913,7 +943,7 @@ export default function App() {
         <div className="case-id-bar" style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: C.text3 }}>
           <span style={{ color: C.border }}>│</span>
           <span style={{ color: C.amber, letterSpacing: 1, fontFamily: C.mono }}>{caseId}</span>
-          {loadedModel && <span>· {loadedModel.name}</span>}
+          {(loadedModel || (targetMode === 'api' && loadedModelId)) && <span>· {loadedModel?.name || loadedModelId}</span>}
         </div>
       )}
 
@@ -974,7 +1004,7 @@ export default function App() {
         <SessionContextBar
           C={C}
           stage={stage}
-          model={loadedModel || selectedVictimModel}
+          model={loadedModel || (targetMode === 'api' ? { name: apiModelId } : selectedVictimModel)}
           caseId={caseId}
           controlIds={activeControlIds}
           probeIndex={probeIndex}
@@ -1007,6 +1037,10 @@ export default function App() {
             promptHash={promptHash}
             hardwareProfile={hardwareProfile}
             applyHardwareRecommendation={applyHardwareRecommendation}
+            targetMode={targetMode} setTargetMode={setTargetMode}
+            apiEndpoint={apiEndpoint} setApiEndpoint={setApiEndpoint}
+            apiKey={apiKey} setApiKey={setApiKey}
+            apiModelId={apiModelId} setApiModelId={setApiModelId}
             victimModelId={victimModelId} setVictimModelId={setVictimModelId}
             victimModels={VICTIM_MODELS}
             presetId={presetId} setPresetId={setPresetId}
@@ -1024,7 +1058,13 @@ export default function App() {
         )}
 
         {stage === STAGE.LOADING && (
-          <LoadingStage C={C} cluster={cluster} modelName={selectedVictimModel?.name} modelSize={selectedVictimModel?.size} progress={loadProgress} />
+          <LoadingStage
+            C={C}
+            cluster={cluster}
+            modelName={targetMode === 'api' ? apiModelId : selectedVictimModel?.name}
+            modelSize={targetMode === 'api' ? '' : selectedVictimModel?.size}
+            progress={loadProgress}
+          />
         )}
 
         {stage === STAGE.SELECT && cluster && (
@@ -1238,14 +1278,22 @@ function GlobalStyle({ C }) {
 }
 
 // ═══ STAGE 1 · Begin assessment ═══════════════════════════════════════════════
+const TARGET_TYPES = [
+  { id: 'local', name: 'LOCAL (WEBGPU)', description: 'Run an open-weight model in your browser. Offline after first download.' },
+  { id: 'api', name: 'API TARGET', description: 'Send probes to a live production endpoint over fetch.' },
+];
+
 function CaseSetup({
   C, victimModelId, setVictimModelId, victimModels,
   presetId, setPresetId, victimPrompt, setVictimPrompt, clusterId, setClusterId, clusters,
   judgeMode, setJudgeMode, judgeModelId, setJudgeModelId, judgeModels, onOpen, modelStatus, findingsCount, onReport,
   promptHash, hardwareProfile, applyHardwareRecommendation,
+  targetMode, setTargetMode, apiEndpoint, setApiEndpoint, apiKey, setApiKey, apiModelId, setApiModelId,
 }) {
   const model = victimModels.find(m => m.id === victimModelId);
-  const ready = clusterId && victimPrompt.trim();
+  const isApiTarget = targetMode === 'api';
+  const apiFieldsFilled = Boolean(apiEndpoint.trim() && apiKey.trim() && apiModelId.trim());
+  const ready = clusterId && victimPrompt.trim() && (!isApiTarget || apiFieldsFilled);
   const hardwareVictim = victimModels.find(m => m.id === hardwareProfile.recommendation?.victimModelId);
 
   const label = (t) => (
@@ -1258,6 +1306,27 @@ function CaseSetup({
       <div style={{ marginBottom: 32 }}>
         <div style={{ fontSize: 28, color: C.text1, fontWeight: 900, letterSpacing: .5 }}>Begin Assessment</div>
         <div style={{ fontSize: 13, color: C.text3, marginTop: 6 }}>Pick your target, technique, and model — then start probing.</div>
+      </div>
+
+      {/* Target type */}
+      <div style={{ marginBottom: 28 }}>
+        {label('Target type')}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 8 }}>
+          {TARGET_TYPES.map(opt => {
+            const active = targetMode === opt.id;
+            return (
+              <button key={opt.id} className="es-pick" onClick={() => setTargetMode(opt.id)} style={{
+                textAlign: 'left', padding: '13px 14px', borderRadius: 4, cursor: 'pointer',
+                background: active ? C.amberBg : C.surface,
+                border: `1px solid ${active ? C.amber : C.border}`,
+                borderLeft: `3px solid ${active ? C.amber : 'transparent'}`,
+              }}>
+                <div style={{ fontSize: 14, color: C.text1, fontWeight: 700, marginBottom: 3 }}>{opt.name}</div>
+                <div style={{ fontSize: 12, color: C.text2, lineHeight: 1.45 }}>{opt.description}</div>
+              </button>
+            );
+          })}
+        </div>
       </div>
 
       {/* Target system prompt */}
@@ -1304,33 +1373,58 @@ function CaseSetup({
       {/* Model + Judge row */}
       <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) auto', gap: 12, marginBottom: 28, alignItems: 'start' }} className="model-judge-row">
         <div>
-          {label('Model')}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
-            {victimModels.map(m => {
-              const active = victimModelId === m.id;
-              return (
-                <button key={m.id} onClick={() => setVictimModelId(m.id)} style={{
-                  padding: '6px 11px', borderRadius: 3, cursor: 'pointer', fontFamily: C.mono,
-                  background: active ? C.amberBg : C.surface,
-                  border: `1px solid ${active ? C.amber : C.border}`,
-                  color: active ? C.amber : C.text2, fontSize: 12, fontWeight: active ? 800 : 500,
-                }}>
-                  {m.name} <span style={{ fontSize: 10, color: active ? C.amber : C.text3, opacity: .8 }}>{m.size}</span>
-                </button>
-              );
-            })}
-          </div>
-          {hardwareProfile.status === 'ready' && hardwareVictim && (
-            <div style={{ marginTop: 8, fontSize: 11, color: C.text3 }}>
-              Detected ~{hardwareProfile.estimatedVramGb?.toFixed(1)} GB VRAM ·{' '}
-              <button onClick={applyHardwareRecommendation} style={{ background: 'none', border: 'none', color: C.amber, cursor: 'pointer', fontSize: 11, fontWeight: 800, fontFamily: C.mono }}>
-                use recommended ({hardwareVictim.name})
-              </button>
+          {label(isApiTarget ? 'API target' : 'Model')}
+          {isApiTarget ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+              <div>
+                <div style={{ fontSize: 11, color: C.text3, marginBottom: 4 }}>Endpoint URL</div>
+                <input type="text" value={apiEndpoint} onChange={e => setApiEndpoint(e.target.value)}
+                  placeholder="https://api.openai.com/v1" autoComplete="off" style={inputStyle(C)} />
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: C.text3, marginBottom: 4 }}>API key</div>
+                <input type="password" value={apiKey} onChange={e => setApiKey(e.target.value)}
+                  placeholder="sk-…" autoComplete="off" style={inputStyle(C)} />
+              </div>
+              <div>
+                <div style={{ fontSize: 11, color: C.text3, marginBottom: 4 }}>Model ID</div>
+                <input type="text" value={apiModelId} onChange={e => setApiModelId(e.target.value)}
+                  placeholder="gpt-4o-mini" autoComplete="off" style={inputStyle(C)} />
+              </div>
+              <div style={{ fontSize: 11, color: C.text3, display: 'flex', alignItems: 'center', gap: 5 }}>
+                <AlertTriangle size={11} color={C.amberDim} /> Key is held in memory for this session only — never saved to disk.
+              </div>
             </div>
+          ) : (
+            <>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+                {victimModels.map(m => {
+                  const active = victimModelId === m.id;
+                  return (
+                    <button key={m.id} onClick={() => setVictimModelId(m.id)} style={{
+                      padding: '6px 11px', borderRadius: 3, cursor: 'pointer', fontFamily: C.mono,
+                      background: active ? C.amberBg : C.surface,
+                      border: `1px solid ${active ? C.amber : C.border}`,
+                      color: active ? C.amber : C.text2, fontSize: 12, fontWeight: active ? 800 : 500,
+                    }}>
+                      {m.name} <span style={{ fontSize: 10, color: active ? C.amber : C.text3, opacity: .8 }}>{m.size}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              {hardwareProfile.status === 'ready' && hardwareVictim && (
+                <div style={{ marginTop: 8, fontSize: 11, color: C.text3 }}>
+                  Detected ~{hardwareProfile.estimatedVramGb?.toFixed(1)} GB VRAM ·{' '}
+                  <button onClick={applyHardwareRecommendation} style={{ background: 'none', border: 'none', color: C.amber, cursor: 'pointer', fontSize: 11, fontWeight: 800, fontFamily: C.mono }}>
+                    use recommended ({hardwareVictim.name})
+                  </button>
+                </div>
+              )}
+              <div style={{ marginTop: 6, fontSize: 11, color: C.text3, display: 'flex', alignItems: 'center', gap: 5 }}>
+                <AlertTriangle size={11} color={C.amberDim} /> First load downloads {model?.size || 'model'} — runs offline after.
+              </div>
+            </>
           )}
-          <div style={{ marginTop: 6, fontSize: 11, color: C.text3, display: 'flex', alignItems: 'center', gap: 5 }}>
-            <AlertTriangle size={11} color={C.amberDim} /> First load downloads {model?.size || 'model'} — runs offline after.
-          </div>
         </div>
 
         <div style={{ minWidth: 160 }}>
@@ -1375,11 +1469,15 @@ function CaseSetup({
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
           transition: 'all .2s',
         }}>
-          {modelStatus === 'loading' ? 'LOADING MODEL…' : 'BEGIN ASSESSMENT'} <ChevronRight size={16} />
+          {modelStatus === 'loading' ? (isApiTarget ? 'CONNECTING…' : 'LOADING MODEL…') : 'BEGIN ASSESSMENT'} <ChevronRight size={16} />
         </button>
         {!ready && (
           <div style={{ textAlign: 'center', marginTop: 8, fontSize: 12, color: C.text3 }}>
-            {!victimPrompt.trim() ? 'Paste a target system prompt to continue.' : 'Pick a technique to probe.'}
+            {!victimPrompt.trim()
+              ? 'Paste a target system prompt to continue.'
+              : !clusterId
+                ? 'Pick a technique to probe.'
+                : 'Fill in the endpoint URL, API key, and model ID to continue.'}
           </div>
         )}
       </div>
