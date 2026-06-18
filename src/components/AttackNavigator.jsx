@@ -54,7 +54,7 @@ export default function AttackNavigator({
             fontSize: 9, fontWeight: 800, letterSpacing: 1.4, textTransform: 'uppercase',
             writingMode: 'vertical-rl', transform: 'rotate(180deg)', color: C.text3, marginTop: 2,
           }}>Probes</span>
-          <span style={{ fontSize: 11, color: C.amber, fontWeight: 800 }}>{totalProbes}</span>
+          <span style={{ fontSize: 11, color: C.copper, fontWeight: 800 }}>{totalProbes}</span>
         </button>
         <button onClick={() => setOpen(true)} style={{
           marginTop: 'auto', marginBottom: 14, padding: 8, background: 'transparent', border: 'none',
@@ -86,9 +86,9 @@ export default function AttackNavigator({
           {filterLabels.map(([id, label]) => (
             <button key={id} onClick={() => setFilter(id)} style={{
               padding: '4px 7px',
-              background: filter === id ? C.amberBg : 'transparent',
-              border: `1px solid ${filter === id ? C.amber : C.borderHi}`,
-              color: filter === id ? C.amber : C.text3,
+              background: filter === id ? C.copperBg : 'transparent',
+              border: `1px solid ${filter === id ? C.copper : C.borderHi}`,
+              color: filter === id ? C.copper : C.text3,
               borderRadius: 2, fontSize: 11, fontWeight: 700, cursor: 'pointer',
             }}>
               {label}
@@ -106,7 +106,7 @@ export default function AttackNavigator({
       <div style={{ flex: 1, overflowY: 'auto' }}>
         {visibleClusters.map(cluster => {
           const clusterActive = activeClusterId === cluster.id;
-          const color = C[cluster.colorKey] || C.amber;
+          const color = C[cluster.colorKey] || C.copper;
           return (
             <section key={cluster.id} style={{ borderBottom: `1px solid ${C.border}` }}>
               <div style={{ padding: '9px 12px 5px' }}>

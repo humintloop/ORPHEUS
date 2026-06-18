@@ -1,7 +1,7 @@
 // Source-backed mitigation references plus project-defined action guidance.
 // MITRE ATLAS entries preserve official IDs/names from mitre-atlas/atlas-data
 // dist/ATLAS.yaml at commit da9ebf9b66e6902ad97c267e2a20af0bd996a60f.
-// ELICIT recommended actions and retest guidance are project-defined.
+// ORPHEUS recommended actions and retest guidance are project-defined.
 
 export const MITIGATION_SET_VERSION = '0.2.0';
 

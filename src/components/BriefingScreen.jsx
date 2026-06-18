@@ -16,7 +16,7 @@ function Field({ C, label, children }) {
 export default function BriefingScreen({ C, cluster, payload, mapping, mode = 'compact' }) {
   if (!payload && mode === 'compact') return null;
 
-  const color = C[cluster?.colorKey] || C.amber;
+  const color = C[cluster?.colorKey] || C.copper;
   const title = payload?.name || cluster?.name || 'Select a test case';
   const code = payload?.technique || cluster?.code || 'NO CASE';
   const owasp = cluster?.owasp || mapping?.owasp || '';

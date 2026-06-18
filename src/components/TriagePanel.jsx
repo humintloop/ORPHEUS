@@ -16,7 +16,7 @@ export default function TriagePanel({
   if (!evalResult) return null;
 
   const finalVerdict = finalEvalSummary?.finalVerdict || evalResult.verdict;
-  const color = finalVerdict === 'SUCCESS' ? C.red : finalVerdict === 'PARTIAL' ? C.amber : finalVerdict === 'REVIEW' ? C.text3 : C.teal;
+  const color = finalVerdict === 'SUCCESS' ? C.red : finalVerdict === 'PARTIAL' ? C.copper : finalVerdict === 'REVIEW' ? C.text3 : C.signal;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 8, flexShrink: 0, animation: 'fadeIn .2s ease' }}>
@@ -53,8 +53,8 @@ export default function TriagePanel({
           onClick={addFinding}
           disabled={saveDisabled}
           style={{
-            padding: '9px 13px', background: C.amberBg, border: `1px solid ${C.amber}40`,
-            color: C.amber, fontSize: 13, fontWeight: 700, letterSpacing: 1,
+            padding: '9px 13px', background: C.copperBg, border: `1px solid ${C.copper}40`,
+            color: C.copper, fontSize: 13, fontWeight: 700, letterSpacing: 1,
             cursor: saveDisabled ? 'not-allowed' : 'pointer',
             opacity: saveDisabled ? 0.45 : 1,
             borderRadius: 2, flexShrink: 0,
@@ -85,12 +85,12 @@ export default function TriagePanel({
           {judgeMode && (
             <div style={{
               flex: 1, padding: '10px 12px',
-              background: judgeResult ? `${color}14` : C.amberBg,
-              border: `1px solid ${judgeResult ? color + '40' : C.amber + '40'}`,
+              background: judgeResult ? `${color}14` : C.copperBg,
+              border: `1px solid ${judgeResult ? color + '40' : C.copper + '40'}`,
               borderRadius: 2,
             }}>
               <div style={{ fontSize: 13, color: C.text2, letterSpacing: 1, marginBottom: 5 }}>
-                LLM JUDGE {judging && <span style={{ color: C.amber }}>EVALUATING...</span>}
+                LLM JUDGE {judging && <span style={{ color: C.copper }}>EVALUATING...</span>}
               </div>
               {judgeResult ? (
                 <>
@@ -100,7 +100,7 @@ export default function TriagePanel({
                   <div style={{ fontSize: 14, color: C.text2, lineHeight: 1.5 }}>{judgeResult.text}</div>
                 </>
               ) : judging ? (
-                <div style={{ fontSize: 14, color: C.amber }}>
+                <div style={{ fontSize: 14, color: C.copper }}>
                   <RefreshCw size={10} style={{ display: 'inline', animation: 'spin 1s linear infinite', marginRight: 4 }} />
                   Swapping to judge model...
                 </div>
@@ -111,8 +111,8 @@ export default function TriagePanel({
       )}
 
       {judgeMode && judgeResult && summarizeEvaluation(evalResult, judgeResult).disagreement && (
-        <div style={{ padding: '8px 12px', background: C.amberBg, border: `1px solid ${C.amber}40`, borderRadius: 2 }}>
-          <div style={{ fontSize: 13, color: C.amber, letterSpacing: 1, marginBottom: 4, fontWeight: 700 }}>REVIEW REQUIRED</div>
+        <div style={{ padding: '8px 12px', background: C.copperBg, border: `1px solid ${C.copper}40`, borderRadius: 2 }}>
+          <div style={{ fontSize: 13, color: C.copper, letterSpacing: 1, marginBottom: 4, fontWeight: 700 }}>REVIEW REQUIRED</div>
           <div style={{ fontSize: 13, color: C.text2, lineHeight: 1.45 }}>
             Heuristic says {getVerdictLabel(evalResult.verdict)}, judge says {getVerdictLabel(judgeResult.verdict)}. The evaluators materially disagree, so keep both signals in the finding.
           </div>

@@ -50,13 +50,13 @@ export default function ConversationTranscript({
       </div>
       <div style={{ display: 'grid', gap: 10, padding: 12 }}>
         <TranscriptBlock C={C} label="Target system prompt" text={victimPrompt} maxHeight={compact ? 88 : 120} dim />
-        <TranscriptBlock C={C} label="Attack payload" text={payload} maxHeight={compact ? 110 : 150} accent={C.amber} />
+        <TranscriptBlock C={C} label="Attack payload" text={payload} maxHeight={compact ? 110 : 150} accent={C.copper} />
         <TranscriptBlock
           C={C}
           label={running ? 'Model response — live' : 'Model response'}
           text={response || (running ? 'Waiting for first tokens...' : 'No response captured yet.')}
           maxHeight={compact ? 220 : null}
-          accent={C.teal}
+          accent={C.signal}
           bright
           live={running}
         />
@@ -76,7 +76,7 @@ function TranscriptBlock({ C, label, text, maxHeight, accent, bright, dim, live 
   return (
     <div>
       <div style={{ fontSize: 11, color: accent || C.text3, letterSpacing: 1.4, textTransform: 'uppercase', marginBottom: 6, fontWeight: 800 }}>
-        {label} {live && <span style={{ color: C.amber, animation: 'blink 1s infinite' }}>●</span>}
+        {label} {live && <span style={{ color: C.copper, animation: 'blink 1s infinite' }}>●</span>}
       </div>
       <div style={{
         background: isBright ? `${accent}0A` : C.bg,
@@ -94,7 +94,7 @@ function TranscriptBlock({ C, label, text, maxHeight, accent, bright, dim, live 
         wordBreak: 'break-word',
       }}>
         {text}
-        {live && <span style={{ color: C.amber, animation: 'blink 1s infinite' }}>▋</span>}
+        {live && <span style={{ color: C.copper, animation: 'blink 1s infinite' }}>▋</span>}
       </div>
     </div>
   );

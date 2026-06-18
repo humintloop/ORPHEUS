@@ -53,14 +53,14 @@ export default function FindingsReport({
             </button>
             <button onClick={exportReport} style={{
               display: 'flex', alignItems: 'center', gap: 5, padding: '5px 12px',
-              background: C.amberBg, border: `1px solid ${C.amber}40`, color: C.amber,
+              background: C.copperBg, border: `1px solid ${C.copper}40`, color: C.copper,
               fontSize: 14, fontWeight: 700, letterSpacing: 1, cursor: 'pointer', borderRadius: 2,
             }}>
               <FileText size={11} /> EXPORT REPORT
             </button>
             <button onClick={exportAuditBrief} style={{
               display: 'flex', alignItems: 'center', gap: 5, padding: '5px 12px',
-              background: C.amberBg, border: `1px solid ${C.amber}70`, color: C.amber,
+              background: C.copperBg, border: `1px solid ${C.copper}70`, color: C.copper,
               fontSize: 14, fontWeight: 700, letterSpacing: 1, cursor: 'pointer', borderRadius: 2,
             }}>
               <FileText size={11} /> AUDIT BRIEF HTML
@@ -108,13 +108,13 @@ export default function FindingsReport({
           <div style={{
             width: 'min(520px, 100%)',
             background: C.panel,
-            border: `1px solid ${C.amber}55`,
-            borderLeft: `3px solid ${C.amber}`,
+            border: `1px solid ${C.copper}55`,
+            borderLeft: `3px solid ${C.copper}`,
             borderRadius: 4,
             padding: '18px 20px',
             boxShadow: '0 24px 80px rgba(0,0,0,.42)',
           }}>
-            <div style={{ fontSize: 12, color: C.amber, letterSpacing: 1.4, fontWeight: 900, marginBottom: 8 }}>
+            <div style={{ fontSize: 12, color: C.copper, letterSpacing: 1.4, fontWeight: 900, marginBottom: 8 }}>
               EXPORT BEFORE CLEARING
             </div>
             <div style={{ fontSize: 14, color: C.text1, lineHeight: 1.55, marginBottom: 16 }}>
@@ -130,7 +130,7 @@ export default function FindingsReport({
               </button>
               <button onClick={exportReport} style={{
                 display: 'flex', alignItems: 'center', gap: 5, padding: '8px 12px',
-                background: C.amberBg, border: `1px solid ${C.amber}55`, color: C.amber,
+                background: C.copperBg, border: `1px solid ${C.copper}55`, color: C.copper,
                 fontSize: 12, fontWeight: 800, letterSpacing: 1, cursor: 'pointer', borderRadius: 2,
               }}>
                 <FileText size={11} /> EXPORT REPORT

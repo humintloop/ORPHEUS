@@ -21,33 +21,31 @@ import FindingCard from './components/FindingCard';
 
 // ── Design tokens ─────────────────────────────────────────────────────────────
 const C = {
-  bg:       '#0A0C16',
-  panel:    '#0D111D',
-  surface:  '#121827',
-  hover:    '#171E31',
-  border:   '#1C2238',
-  borderHi: '#313A56',
-  red:      '#DC4838',
-  redDim:   '#743025',
-  redBg:    'rgba(220,72,56,.12)',
-  teal:     '#00CFC4',
-  tealBg:   'rgba(0,207,196,.10)',
-  green:    '#4EBA6F',
-  greenBg:  'rgba(78,186,111,.12)',
-  blue:     '#6D8FD6',
-  amber:    '#C87844',
-  amberDim: '#82492A',
-  orange:   '#D37A36',
-  ochre:    '#B99242',
-  amberBg:  'rgba(200,120,68,.13)',
-  warmDim:  '#C4A07A',
-  coolDim:  '#7A9AB5',
-  ink:      '#0A0C16',
-  text1:    '#E6D6C8',
-  text2:    '#8FB8C8',
-  text3:    '#8BAFC0',
-  mono:     '"Geist Mono", ui-monospace, monospace',
-  sans:     '"Space Grotesk", -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif',
+  bg:        '#0A0614',
+  panel:     '#0E0A1C',
+  surface:   '#140F26',
+  hover:     '#1C1735',
+  border:    '#211845',
+  borderHi:  '#2E2260',
+  signal:    '#00D4C8',
+  signalDim: '#007A74',
+  signalBg:  'rgba(0,212,200,.10)',
+  copper:    '#C87844',
+  copperDim: '#7A4C2A',
+  copperBg:  'rgba(200,120,68,.12)',
+  void:      '#7B5FD4',
+  voidDim:   '#4A3880',
+  voidBg:    'rgba(123,95,212,.15)',
+  red:       '#C23B5F',
+  redBg:     'rgba(194,59,95,.12)',
+  green:     '#3CB878',
+  greenBg:   'rgba(60,184,120,.12)',
+  text1:     '#E0D4F0',
+  text2:     '#9A8ABF',
+  text3:     '#6B5D8A',
+  ink:       '#0A0614',
+  mono:      '"Geist Mono", ui-monospace, monospace',
+  sans:      '"Space Grotesk", -apple-system, BlinkMacSystemFont, sans-serif',
 };
 
 // ── Models ────────────────────────────────────────────────────────────────────
@@ -105,16 +103,32 @@ const BRAND_BASE = import.meta.env.BASE_URL;
 const BRAND_VERSION = '2026-06-15-copper';
 const ATTACK_MODEL_SETTINGS = { temperature: 0.7, max_tokens: 600 };
 const JUDGE_MODEL_SETTINGS = { temperature: 0.1, max_tokens: 150 };
-const DIFFICULTY_COLOR = { low: C.text3, medium: C.amberDim, high: C.amber };
+const DIFFICULTY_COLOR = { low: C.text3, medium: C.copperDim, high: C.copper };
 
 const createRunId = () => `run-${new Date().toISOString().replace(/[-:.TZ]/g, '').slice(0, 14)}-${Math.random().toString(36).slice(2, 8)}`;
 const verdictRank = (v = '') => ({ FAILURE: 0, FAILED: 0, REVIEW: 1, PARTIAL: 2, SUCCESS: 3 }[String(v).toUpperCase()] ?? 1);
-const ACTIVE_CASE_KEY = 'elicit-active-case';
+const ACTIVE_CASE_KEY = 'orpheus-active-case';
+
+// One-time migration from the pre-rebrand ELICIT localStorage keys. Runs at module
+// load, before any state initializes. Becomes a no-op once the legacy keys are gone.
+(() => {
+  const LEGACY_KEY_MAP = {
+    'elicit-findings': 'orpheus-findings',
+    'elicit-active-case': ACTIVE_CASE_KEY,
+    'elicit-analyst': 'orpheus-analyst',
+  };
+  for (const [oldKey, newKey] of Object.entries(LEGACY_KEY_MAP)) {
+    const value = localStorage.getItem(oldKey);
+    if (value === null) continue;
+    localStorage.setItem(newKey, value);
+    localStorage.removeItem(oldKey);
+  }
+})();
 const EFFECTIVENESS_OPTIONS = [
   { value: 'ABSENT', label: 'ABSENT', help: 'Control does not exist or was never implemented', colorKey: 'red' },
-  { value: 'INEFFECTIVE', label: 'INEFFECTIVE', help: 'Control exists but failed completely under testing', colorKey: 'amber' },
-  { value: 'PARTIAL', label: 'PARTIAL', help: 'Control exists and partially functions but has exploitable gaps', colorKey: 'amber' },
-  { value: 'EFFECTIVE', label: 'EFFECTIVE', help: 'Control exists and functioned as expected under testing', colorKey: 'teal' },
+  { value: 'INEFFECTIVE', label: 'INEFFECTIVE', help: 'Control exists but failed completely under testing', colorKey: 'copper' },
+  { value: 'PARTIAL', label: 'PARTIAL', help: 'Control exists and partially functions but has exploitable gaps', colorKey: 'copper' },
+  { value: 'EFFECTIVE', label: 'EFFECTIVE', help: 'Control exists and functioned as expected under testing', colorKey: 'signal' },
 ];
 const AUDIT_FINDING_VERDICTS = new Set(['SUCCESS', 'PARTIAL']);
 const isAssessed = (value) => ['ABSENT', 'INEFFECTIVE', 'PARTIAL', 'EFFECTIVE'].includes(String(value || '').toUpperCase());
@@ -217,14 +231,14 @@ function CompatGate({ C }) {
         padding: 24,
       }}>
         <div style={{ maxWidth: 480, width: '100%', display: 'flex', flexDirection: 'column', gap: 20 }}>
-          <div style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: 28, fontWeight: 700, letterSpacing: 6, color: C.amber }}>ELICIT</div>
+          <div style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: 28, fontWeight: 700, letterSpacing: 6, color: C.copper }}>ORPHEUS</div>
 
           <div style={{ padding: '16px 18px', background: C.redBg, border: `1px solid ${C.red}55`, borderLeft: `3px solid ${C.red}`, borderRadius: 4 }}>
             <div style={{ fontSize: 12, color: C.red, fontWeight: 800, letterSpacing: 1.4, textTransform: 'uppercase', marginBottom: 8 }}>
               Mobile not supported
             </div>
             <div style={{ fontSize: 14, color: C.text1, lineHeight: 1.6 }}>
-              ELICIT runs large language models directly in your browser using WebGPU, and the API target workstation needs more screen than a phone gives you. Mobile devices can't run either mode here.
+              ORPHEUS runs large language models directly in your browser using WebGPU, and the API target workstation needs more screen than a phone gives you. Mobile devices can't run either mode here.
             </div>
           </div>
 
@@ -249,13 +263,13 @@ function CompatGate({ C }) {
 
   return (
     <div style={{
-      flexShrink: 0, padding: '11px 20px', background: C.amberBg,
-      border: `1px solid ${C.amber}55`, borderLeft: `3px solid ${C.amber}`,
+      flexShrink: 0, padding: '11px 20px', background: C.copperBg,
+      border: `1px solid ${C.copper}55`, borderLeft: `3px solid ${C.copper}`,
     }}>
       <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start' }}>
-        <AlertTriangle size={15} color={C.amber} style={{ flexShrink: 0, marginTop: 2 }} />
+        <AlertTriangle size={15} color={C.copper} style={{ flexShrink: 0, marginTop: 2 }} />
         <div style={{ fontSize: 13, color: C.text1, lineHeight: 1.55 }}>
-          <strong style={{ color: C.amber }}>Local model mode unavailable —</strong>{' '}
+          <strong style={{ color: C.copper }}>Local model mode unavailable —</strong>{' '}
           {issues.join(' and ')}. Local (WebGPU) mode won't run in this browser; use <strong style={{ color: C.text1 }}>Chrome or Edge</strong> on desktop for that. API Target mode is unaffected and works here.
         </div>
       </div>
@@ -286,7 +300,7 @@ export default function App() {
   const [runPreset, setRunPreset] = useState(savedCase.runPreset || 'standard');
   const [clusterId, setClusterId] = useState(savedCase.clusterId || CLUSTERS[0]?.id || null);
   const [judgeMode, setJudgeMode] = useState(Boolean(savedCase.judgeMode));
-  const [analyst, setAnalyst] = useState(() => savedCase.analyst || localStorage.getItem('elicit-analyst') || '');
+  const [analyst, setAnalyst] = useState(() => savedCase.analyst || localStorage.getItem('orpheus-analyst') || '');
   const [selectedControlIds, setSelectedControlIds] = useState(savedCase.selectedControlIds || []);
   const [hardwareProfile, setHardwareProfile] = useState({ status: 'detecting' });
 
@@ -324,11 +338,11 @@ export default function App() {
 
   // Findings
   const [findings, setFindings] = useState(() => {
-    try { return JSON.parse(localStorage.getItem('elicit-findings') || localStorage.getItem('rtl-findings') || '[]'); } catch { return []; }
+    try { return JSON.parse(localStorage.getItem('orpheus-findings') || localStorage.getItem('rtl-findings') || '[]'); } catch { return []; }
   });
 
-  useEffect(() => { localStorage.setItem('elicit-findings', JSON.stringify(findings)); }, [findings]);
-  useEffect(() => { if (analyst) localStorage.setItem('elicit-analyst', analyst); }, [analyst]);
+  useEffect(() => { localStorage.setItem('orpheus-findings', JSON.stringify(findings)); }, [findings]);
+  useEffect(() => { if (analyst) localStorage.setItem('orpheus-analyst', analyst); }, [analyst]);
   useEffect(() => {
     let cancelled = false;
     simplePromptHash(victimPrompt).then(hash => { if (!cancelled) setPromptHash(hash); });
@@ -865,14 +879,14 @@ export default function App() {
     const blob = new Blob([JSON.stringify(findings, null, 2)], { type: 'application/json' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = `elicit-findings-${new Date().toISOString().slice(0, 10)}.json`;
+    a.download = `orpheus-findings-${new Date().toISOString().slice(0, 10)}.json`;
     a.click();
   };
   const exportReport = () => {
-    downloadMarkdown(`elicit-assessment-report-${new Date().toISOString().slice(0, 10)}.md`, generateAssessmentReport(findings));
+    downloadMarkdown(`orpheus-assessment-report-${new Date().toISOString().slice(0, 10)}.md`, generateAssessmentReport(findings));
   };
   const exportAuditBrief = () => {
-    downloadHtml(`elicit-audit-brief-${new Date().toISOString().slice(0, 10)}.html`, generateAuditBriefHtml(findings, { assuranceProfile: ASSURANCE_PROFILE.label }));
+    downloadHtml(`orpheus-audit-brief-${new Date().toISOString().slice(0, 10)}.html`, generateAuditBriefHtml(findings, { assuranceProfile: ASSURANCE_PROFILE.label }));
   };
   const updateFinding = (id, patch) => setFindings(prev => prev.map(f => f.id === id ? { ...f, ...patch } : f));
   const applyHardwareRecommendation = () => {
@@ -932,17 +946,17 @@ export default function App() {
       background: `linear-gradient(180deg, ${C.panel}, rgba(10,12,22,.96))`,
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, minWidth: 0 }}>
-        <img src={`${BRAND_BASE}brand/elicit-icon.png?v=${BRAND_VERSION}`} alt="" style={{ width: 38, height: 38, borderRadius: 9, boxShadow: `0 0 0 1px ${C.amber}55` }} />
+        <img src={`${BRAND_BASE}brand/orpheus-icon.svg?v=${BRAND_VERSION}`} alt="" style={{ width: 38, height: 38, borderRadius: 9, boxShadow: `0 0 0 1px ${C.copper}55` }} />
         <div style={{ minWidth: 0 }}>
-          <div style={{ fontFamily: "'Rajdhani', sans-serif", color: C.amber, fontSize: 24, fontWeight: 700, letterSpacing: 6, lineHeight: 1 }}>ELICIT</div>
-          <div style={{ color: C.warmDim, fontSize: 11, fontWeight: 800, letterSpacing: 1.4, textTransform: 'uppercase', marginTop: 3 }}>Adversarial Assurance Lab</div>
+          <div style={{ fontFamily: "'Rajdhani', sans-serif", color: C.copper, fontSize: 24, fontWeight: 700, letterSpacing: 6, lineHeight: 1 }}>ORPHEUS</div>
+          <div style={{ color: C.copperDim, fontSize: 11, fontWeight: 800, letterSpacing: 1.4, textTransform: 'uppercase', marginTop: 3 }}>Adversarial Assurance Lab</div>
         </div>
       </div>
 
       {stage !== STAGE.HOME && stage !== STAGE.CASE && (
         <div className="case-id-bar" style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: C.text3 }}>
           <span style={{ color: C.border }}>│</span>
-          <span style={{ color: C.amber, letterSpacing: 1, fontFamily: C.mono }}>{caseId}</span>
+          <span style={{ color: C.copper, letterSpacing: 1, fontFamily: C.mono }}>{caseId}</span>
           {(loadedModel || (targetMode === 'api' && loadedModelId)) && <span>· {loadedModel?.name || loadedModelId}</span>}
         </div>
       )}
@@ -970,7 +984,7 @@ export default function App() {
   // ── Stage progress rail (shows where you are without clutter) ──
   const triageTotal = confirmedCaseFindings.length;
   const triageAwaiting = triageQueue.length > 0;
-  const triageDotColor = triageAwaiting ? C.amber : triageTotal > 0 ? C.teal : C.borderHi;
+  const triageDotColor = triageAwaiting ? C.copper : triageTotal > 0 ? C.signal : C.borderHi;
   const stageRail = stage !== STAGE.HOME && stage !== STAGE.CASE && (
     <div style={{ display: 'flex', alignItems: 'center', gap: 0, padding: '8px 20px', borderBottom: `1px solid ${C.border}`, background: 'rgba(10,12,22,.7)', flexShrink: 0, overflowX: 'auto' }}>
       {[
@@ -980,10 +994,10 @@ export default function App() {
         ['Triage', stage === STAGE.TRIAGE, () => setStage(STAGE.TRIAGE), Boolean(evalResult || response || triageTotal)],
         ['Report', stage === STAGE.REPORT, () => setStage(STAGE.REPORT), true],
       ].map(([label, active, onClick, enabled], i) => (
-        <button key={label} onClick={onClick} disabled={!enabled} style={{ display: 'flex', alignItems: 'center', gap: 9, flexShrink: 0, background: active ? C.amberBg : 'transparent', border: `1px solid ${active ? C.amber : 'transparent'}`, borderRadius: 3, padding: '4px 7px', cursor: enabled ? 'pointer' : 'not-allowed', opacity: enabled ? 1 : .45 }}>
+        <button key={label} onClick={onClick} disabled={!enabled} style={{ display: 'flex', alignItems: 'center', gap: 9, flexShrink: 0, background: active ? C.copperBg : 'transparent', border: `1px solid ${active ? C.copper : 'transparent'}`, borderRadius: 3, padding: '4px 7px', cursor: enabled ? 'pointer' : 'not-allowed', opacity: enabled ? 1 : .45 }}>
           {i > 0 && <ChevronRight size={11} color={C.border} style={{ margin: '0 9px' }} />}
-          <div style={{ width: 7, height: 7, borderRadius: '50%', background: label === 'Triage' ? triageDotColor : active ? C.amber : C.borderHi, boxShadow: label === 'Triage' && triageAwaiting ? `0 0 10px ${C.amber}` : active ? `0 0 8px ${C.amber}99` : 'none', animation: label === 'Triage' && triageAwaiting ? 'pulse 1.1s ease-in-out infinite' : 'none' }} />
-          <span style={{ fontSize: 12, letterSpacing: 1, fontWeight: active ? 800 : 500, color: active ? C.amber : C.text3, textTransform: 'uppercase' }}>{label}</span>
+          <div style={{ width: 7, height: 7, borderRadius: '50%', background: label === 'Triage' ? triageDotColor : active ? C.copper : C.borderHi, boxShadow: label === 'Triage' && triageAwaiting ? `0 0 10px ${C.copper}` : active ? `0 0 8px ${C.copper}99` : 'none', animation: label === 'Triage' && triageAwaiting ? 'pulse 1.1s ease-in-out infinite' : 'none' }} />
+          <span style={{ fontSize: 12, letterSpacing: 1, fontWeight: active ? 800 : 500, color: active ? C.copper : C.text3, textTransform: 'uppercase' }}>{label}</span>
         </button>
       ))}
     </div>
@@ -1232,7 +1246,7 @@ export default function App() {
 // ═══ Button helper ════════════════════════════════════════════════════════════
 function btn(C, variant) {
   const base = { display: 'flex', alignItems: 'center', gap: 6, padding: '9px 14px', fontSize: 13, fontWeight: 800, letterSpacing: 1, cursor: 'pointer', borderRadius: 3, fontFamily: C.mono, transition: 'all .15s' };
-  if (variant === 'primary') return { ...base, background: C.amber, color: C.ink, border: `1px solid ${C.amber}`, boxShadow: '0 0 20px rgba(200,120,68,.2)' };
+  if (variant === 'primary') return { ...base, background: C.copper, color: C.ink, border: `1px solid ${C.copper}`, boxShadow: '0 0 20px rgba(200,120,68,.2)' };
   if (variant === 'ghost') return { ...base, background: 'transparent', color: C.text2, border: `1px solid ${C.border}` };
   return base;
 }
@@ -1246,9 +1260,9 @@ function GlobalStyle({ C }) {
       ::-webkit-scrollbar { width: 6px; height: 6px; }
       ::-webkit-scrollbar-thumb { background: ${C.borderHi}; border-radius: 999px; }
       ::-webkit-scrollbar-track { background: transparent; }
-      ::selection { background: ${C.amber}; color: ${C.ink}; }
+      ::selection { background: ${C.copper}; color: ${C.ink}; }
       select, button, input, textarea { font-family: ${C.mono}; }
-      input:focus, textarea:focus, select:focus { outline: none; border-color: ${C.amber} !important; box-shadow: 0 0 0 1px rgba(200,120,68,.24); }
+      input:focus, textarea:focus, select:focus { outline: none; border-color: ${C.copper} !important; box-shadow: 0 0 0 1px rgba(200,120,68,.24); }
       button:hover:not(:disabled) { filter: brightness(1.12); }
       input::placeholder, textarea::placeholder { color: ${C.text3}; }
       @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
@@ -1256,10 +1270,13 @@ function GlobalStyle({ C }) {
       @keyframes spin { to { transform: rotate(360deg); } }
       @keyframes pulse { 0%,100% { opacity: .55; transform: scale(.9); } 50% { opacity: 1; transform: scale(1.25); } }
       @keyframes shimmer { 0%{background-position:-200% 0} 100%{background-position:200% 0} }
-      .brand-title { font-family: 'Rajdhani', sans-serif; font-size: 22px; font-weight: 700; letter-spacing: 6px; color: ${C.amber}; line-height: 1; }
+      @media (prefers-reduced-motion: reduce) {
+        [style*="animation: pulse"], [style*="animation: blink"] { animation: none !important; }
+      }
+      .brand-title { font-family: 'Rajdhani', sans-serif; font-size: 22px; font-weight: 700; letter-spacing: 6px; color: ${C.copper}; line-height: 1; }
       .es-card { animation: fadeUp .35s ease; }
       .es-pick { transition: border-color .15s, background .15s; }
-      .es-pick:hover { border-color: ${C.amber}88 !important; }
+      .es-pick:hover { border-color: ${C.copper}88 !important; }
       button, a, select { touch-action: manipulation; }
       @media (max-width: 760px) {
         .home-hero-grid { grid-template-columns: minmax(0, 1fr) !important; }
@@ -1317,9 +1334,9 @@ function CaseSetup({
             return (
               <button key={opt.id} className="es-pick" onClick={() => setTargetMode(opt.id)} style={{
                 textAlign: 'left', padding: '13px 14px', borderRadius: 4, cursor: 'pointer',
-                background: active ? C.amberBg : C.surface,
-                border: `1px solid ${active ? C.amber : C.border}`,
-                borderLeft: `3px solid ${active ? C.amber : 'transparent'}`,
+                background: active ? C.copperBg : C.surface,
+                border: `1px solid ${active ? C.copper : C.border}`,
+                borderLeft: `3px solid ${active ? C.copper : 'transparent'}`,
               }}>
                 <div style={{ fontSize: 14, color: C.text1, fontWeight: 700, marginBottom: 3 }}>{opt.name}</div>
                 <div style={{ fontSize: 12, color: C.text2, lineHeight: 1.45 }}>{opt.description}</div>
@@ -1350,7 +1367,7 @@ function CaseSetup({
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 8 }}>
           {clusters.map(cl => {
             const active = clusterId === cl.id;
-            const color = C[cl.colorKey] || C.amber;
+            const color = C[cl.colorKey] || C.copper;
             return (
               <button key={cl.id} className="es-pick" onClick={() => setClusterId(cl.id)} style={{
                 textAlign: 'left', padding: '13px 14px', borderRadius: 4, cursor: 'pointer',
@@ -1395,7 +1412,7 @@ function CaseSetup({
                   placeholder="gpt-4o-mini" autoComplete="off" style={inputStyle(C)} />
               </div>
               <div style={{ fontSize: 11, color: C.text3, display: 'flex', alignItems: 'center', gap: 5 }}>
-                <AlertTriangle size={11} color={C.amberDim} /> Key is held in memory for this session only — never saved to disk.
+                <AlertTriangle size={11} color={C.copperDim} /> Key is held in memory for this session only — never saved to disk.
               </div>
             </div>
           ) : (
@@ -1406,11 +1423,11 @@ function CaseSetup({
                   return (
                     <button key={m.id} onClick={() => setVictimModelId(m.id)} style={{
                       padding: '6px 11px', borderRadius: 3, cursor: 'pointer', fontFamily: C.mono,
-                      background: active ? C.amberBg : C.surface,
-                      border: `1px solid ${active ? C.amber : C.border}`,
-                      color: active ? C.amber : C.text2, fontSize: 12, fontWeight: active ? 800 : 500,
+                      background: active ? C.copperBg : C.surface,
+                      border: `1px solid ${active ? C.copper : C.border}`,
+                      color: active ? C.copper : C.text2, fontSize: 12, fontWeight: active ? 800 : 500,
                     }}>
-                      {m.name} <span style={{ fontSize: 10, color: active ? C.amber : C.text3, opacity: .8 }}>{m.size}</span>
+                      {m.name} <span style={{ fontSize: 10, color: active ? C.copper : C.text3, opacity: .8 }}>{m.size}</span>
                     </button>
                   );
                 })}
@@ -1418,13 +1435,13 @@ function CaseSetup({
               {hardwareProfile.status === 'ready' && hardwareVictim && (
                 <div style={{ marginTop: 8, fontSize: 11, color: C.text3 }}>
                   Detected ~{hardwareProfile.estimatedVramGb?.toFixed(1)} GB VRAM ·{' '}
-                  <button onClick={applyHardwareRecommendation} style={{ background: 'none', border: 'none', color: C.amber, cursor: 'pointer', fontSize: 11, fontWeight: 800, fontFamily: C.mono }}>
+                  <button onClick={applyHardwareRecommendation} style={{ background: 'none', border: 'none', color: C.copper, cursor: 'pointer', fontSize: 11, fontWeight: 800, fontFamily: C.mono }}>
                     use recommended ({hardwareVictim.name})
                   </button>
                 </div>
               )}
               <div style={{ marginTop: 6, fontSize: 11, color: C.text3, display: 'flex', alignItems: 'center', gap: 5 }}>
-                <AlertTriangle size={11} color={C.amberDim} /> First load downloads {model?.size || 'model'} — runs offline after.
+                <AlertTriangle size={11} color={C.copperDim} /> First load downloads {model?.size || 'model'} — runs offline after.
               </div>
             </>
           )}
@@ -1436,9 +1453,9 @@ function CaseSetup({
             width: '100%', padding: '9px 14px', borderRadius: 3, cursor: 'pointer', fontFamily: C.mono,
             fontSize: 13, fontWeight: 800, letterSpacing: 1,
             background: judgeMode ? 'rgba(0,207,196,.10)' : C.surface,
-            border: `1px solid ${judgeMode ? C.teal : C.border}`,
-            borderLeft: `3px solid ${C.teal}`,
-            color: judgeMode ? C.teal : C.text2,
+            border: `1px solid ${judgeMode ? C.signal : C.border}`,
+            borderLeft: `3px solid ${C.signal}`,
+            color: judgeMode ? C.signal : C.text2,
           }}>
             {judgeMode ? '● ON' : '○ OFF'}
           </button>
@@ -1466,7 +1483,7 @@ function CaseSetup({
         <button onClick={onOpen} disabled={!ready || modelStatus === 'loading'} style={{
           width: '100%', padding: '16px', borderRadius: 4, border: 'none',
           cursor: ready ? 'pointer' : 'not-allowed',
-          background: ready ? C.amber : C.surface, color: ready ? C.ink : C.text3,
+          background: ready ? C.copper : C.surface, color: ready ? C.ink : C.text3,
           fontSize: 14, fontWeight: 900, letterSpacing: 2, fontFamily: C.mono,
           boxShadow: ready ? '0 0 32px rgba(200,120,68,.25)' : 'none',
           display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
@@ -1500,16 +1517,16 @@ function SessionContextBar({ C, stage, model, caseId, controlIds, probeIndex, to
   const colorFor = (payload) => {
     const outcome = outcomes[payload.id];
     if (payload.id === activeProbeId && !outcome) return C.text1;
-    if (outcome === 'SUCCESS') return C.amber;
-    if (outcome === 'PARTIAL') return C.amber;
-    if (outcome === 'FAILURE' || outcome === 'FAILED') return C.teal;
+    if (outcome === 'SUCCESS') return C.copper;
+    if (outcome === 'PARTIAL') return C.copper;
+    if (outcome === 'FAILURE' || outcome === 'FAILED') return C.signal;
     if (outcome === 'REVIEW') return C.text3;
     return C.borderHi;
   };
   return (
     <div style={{ borderBottom: `1px solid ${C.border}`, background: 'rgba(10,12,22,.88)', flexShrink: 0 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '6px 20px', fontSize: 12, overflowX: 'auto' }}>
-        <span style={{ color: C.amber, fontFamily: C.mono, fontWeight: 700, letterSpacing: 1, flexShrink: 0 }}>{caseId}</span>
+        <span style={{ color: C.copper, fontFamily: C.mono, fontWeight: 700, letterSpacing: 1, flexShrink: 0 }}>{caseId}</span>
         <span style={{ color: C.border }}>·</span>
         <span style={{ color: C.text2, flexShrink: 0 }}>{model?.name || 'no model'}</span>
         {total > 0 && <>
@@ -1518,7 +1535,7 @@ function SessionContextBar({ C, stage, model, caseId, controlIds, probeIndex, to
         </>}
         {findingsCount > 0 && <>
           <span style={{ color: C.border }}>·</span>
-          <span style={{ color: C.teal, flexShrink: 0 }}>{findingsCount} finding{findingsCount !== 1 ? 's' : ''}</span>
+          <span style={{ color: C.signal, flexShrink: 0 }}>{findingsCount} finding{findingsCount !== 1 ? 's' : ''}</span>
         </>}
         {savedLabel && <span style={{ marginLeft: 'auto', color: C.text3, fontSize: 11, flexShrink: 0 }}>saved {savedLabel}</span>}
       </div>
@@ -1544,7 +1561,7 @@ function SessionContextBar({ C, stage, model, caseId, controlIds, probeIndex, to
 
 // ═══ STAGE 2 · Loading (dead-time = briefing) ═════════════════════════════════
 function LoadingStage({ C, cluster, modelName, modelSize, progress }) {
-  const color = C[cluster?.colorKey] || C.amber;
+  const color = C[cluster?.colorKey] || C.copper;
   const brief = cluster?.clusterBrief || {};
   const rows = [
     ['Adversarial goal', brief.threat],
@@ -1581,10 +1598,10 @@ function LoadingStage({ C, cluster, modelName, modelSize, progress }) {
 // ═══ STAGE 3 · Probe (one screen, one action) ════════════════════════════════
 function ProbeSelectStage({ C, cluster, selectedIds, onToggle, onSelectAll, onClearAll, onRunSelected, onRunAll, onSingleMode, onBack, judgeMode }) {
   const probes = cluster?.payloads || [];
-  const color = C[cluster?.colorKey] || C.amber;
+  const color = C[cluster?.colorKey] || C.copper;
   const allSelected = probes.length > 0 && probes.every(p => selectedIds.has(p.id));
   const selectedCount = probes.filter(p => selectedIds.has(p.id)).length;
-  const DIFF_COLOR = { high: C.red, medium: C.amber, low: C.text3 };
+  const DIFF_COLOR = { high: C.red, medium: C.copper, low: C.text3 };
 
   return (
     <div style={{ maxWidth: 740, margin: '0 auto', padding: '40px 24px 120px', display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -1696,7 +1713,7 @@ function BatchFindingsList({ C, findings, total, onView, judging, currentIndex }
   const pendingCount = total - findings.length;
   return (
     <div style={{ margin: '0 28px 24px', display: 'flex', flexDirection: 'column', gap: 6 }}>
-      <div style={{ fontSize: 11, color: judging ? C.blue : C.text3, letterSpacing: 1.4, fontWeight: 900, textTransform: 'uppercase', marginBottom: 4 }}>
+      <div style={{ fontSize: 11, color: judging ? C.void : C.text3, letterSpacing: 1.4, fontWeight: 900, textTransform: 'uppercase', marginBottom: 4 }}>
         {judging ? 'JUDGE RESULTS' : 'COMPLETED PROBES'} · {findings.length}{pendingCount > 0 ? ` / ${total}` : ''}
       </div>
       {findings.map((f, i) => {
@@ -1709,8 +1726,8 @@ function BatchFindingsList({ C, findings, total, onView, judging, currentIndex }
           <button key={f.id} onClick={() => onView(f)} style={{
             display: 'flex', flexDirection: 'column', gap: judged ? 8 : 0, textAlign: 'left',
             padding: '9px 12px', borderRadius: 4, cursor: 'pointer', width: '100%',
-            background: isActive ? `${C.blue}12` : C.panel,
-            border: `1px solid ${isActive ? C.blue + '55' : color + '33'}`,
+            background: isActive ? `${C.void}12` : C.panel,
+            border: `1px solid ${isActive ? C.void + '55' : color + '33'}`,
             borderLeft: `3px solid ${color}`,
             transition: 'border-color .15s, background .15s',
           }}>
@@ -1770,7 +1787,7 @@ function BatchFindingDetail({ C, finding, onClose }) {
             </div>
             {jc && (
               <div style={{ flex: '1 1 160px', background: `${jc}0D`, border: `1px solid ${jc}44`, borderLeft: `3px solid ${jc}`, borderRadius: 4, padding: '10px 12px' }}>
-                <div style={{ fontSize: 10, color: C.teal, letterSpacing: 1.3, marginBottom: 4 }}>LLM JUDGE</div>
+                <div style={{ fontSize: 10, color: C.signal, letterSpacing: 1.3, marginBottom: 4 }}>LLM JUDGE</div>
                 <div style={{ fontSize: 12, color: jc, fontWeight: 800 }}>{getVerdictLabel(finding.judgeVerdict)}</div>
                 {finding.judgeReason && <div style={{ fontSize: 11, color: C.text2, marginTop: 5, lineHeight: 1.5, fontFamily: C.mono, maxHeight: 100, overflowY: 'auto' }}>{finding.judgeReason}</div>}
               </div>
@@ -1778,15 +1795,15 @@ function BatchFindingDetail({ C, finding, onClose }) {
           </div>
           {/* Payload */}
           <div>
-            <div style={{ fontSize: 10, color: C.amber, letterSpacing: 1.3, fontWeight: 800, marginBottom: 5 }}>ATTACK PAYLOAD</div>
-            <div style={{ background: C.panel, border: `1px solid ${C.amber}33`, borderRadius: 4, padding: '10px 12px', fontSize: 12, color: C.text2, fontFamily: C.mono, lineHeight: 1.65, whiteSpace: 'pre-wrap', wordBreak: 'break-word', maxHeight: 140, overflowY: 'auto' }}>
+            <div style={{ fontSize: 10, color: C.copper, letterSpacing: 1.3, fontWeight: 800, marginBottom: 5 }}>ATTACK PAYLOAD</div>
+            <div style={{ background: C.panel, border: `1px solid ${C.copper}33`, borderRadius: 4, padding: '10px 12px', fontSize: 12, color: C.text2, fontFamily: C.mono, lineHeight: 1.65, whiteSpace: 'pre-wrap', wordBreak: 'break-word', maxHeight: 140, overflowY: 'auto' }}>
               {finding.payloadFull || finding.payload}
             </div>
           </div>
           {/* Response */}
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 10, color: C.teal, letterSpacing: 1.3, fontWeight: 800, marginBottom: 5 }}>MODEL RESPONSE</div>
-            <div style={{ background: `${C.teal}0A`, border: `1px solid ${C.teal}33`, borderRadius: 4, padding: '10px 12px', fontSize: 13, color: C.text1, fontFamily: C.mono, lineHeight: 1.7, whiteSpace: 'pre-wrap', wordBreak: 'break-word', maxHeight: 300, overflowY: 'auto' }}>
+            <div style={{ fontSize: 10, color: C.signal, letterSpacing: 1.3, fontWeight: 800, marginBottom: 5 }}>MODEL RESPONSE</div>
+            <div style={{ background: `${C.signal}0A`, border: `1px solid ${C.signal}33`, borderRadius: 4, padding: '10px 12px', fontSize: 13, color: C.text1, fontFamily: C.mono, lineHeight: 1.7, whiteSpace: 'pre-wrap', wordBreak: 'break-word', maxHeight: 300, overflowY: 'auto' }}>
               {finding.responseFull || finding.response}
             </div>
           </div>
@@ -1810,7 +1827,7 @@ function BatchJudgeRunner({ C, status, findings, batchFindingIds, onViewFinding,
       <div style={{ padding: '24px 28px 16px', display: 'flex', flexDirection: 'column', gap: 14, flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
-            <div style={{ fontSize: 11, color: C.blue, letterSpacing: 1.6, textTransform: 'uppercase', marginBottom: 6 }}>Judge Review</div>
+            <div style={{ fontSize: 11, color: C.void, letterSpacing: 1.6, textTransform: 'uppercase', marginBottom: 6 }}>Judge Review</div>
             <div style={{ fontSize: 18, color: C.text1, fontWeight: 700 }}>
               {isLoading ? 'Loading judge model…' : <>{index + 1} <span style={{ color: C.text3, fontWeight: 400 }}>/ {total} findings</span></>}
             </div>
@@ -1823,9 +1840,9 @@ function BatchJudgeRunner({ C, status, findings, batchFindingIds, onViewFinding,
 
         <div style={{ height: 4, background: C.border, borderRadius: 2, overflow: 'hidden' }}>
           {isLoading ? (
-            <div style={{ width: '100%', height: '100%', background: `linear-gradient(90deg, transparent, ${C.blue}, transparent)`, animation: 'shimmer 1.4s ease-in-out infinite', backgroundSize: '200% 100%' }} />
+            <div style={{ width: '100%', height: '100%', background: `linear-gradient(90deg, transparent, ${C.void}, transparent)`, animation: 'shimmer 1.4s ease-in-out infinite', backgroundSize: '200% 100%' }} />
           ) : (
-            <div style={{ width: `${pct}%`, height: '100%', background: C.blue, borderRadius: 2, transition: 'width .4s ease' }} />
+            <div style={{ width: `${pct}%`, height: '100%', background: C.void, borderRadius: 2, transition: 'width .4s ease' }} />
           )}
         </div>
 
@@ -1836,7 +1853,7 @@ function BatchJudgeRunner({ C, status, findings, batchFindingIds, onViewFinding,
           </div>
         )}
         {isLoading && (
-          <div style={{ padding: '12px 14px', background: C.panel, border: `1px solid ${C.blue}33`, borderRadius: 4 }}>
+          <div style={{ padding: '12px 14px', background: C.panel, border: `1px solid ${C.void}33`, borderRadius: 4 }}>
             <div style={{ fontSize: 13, color: C.text3, lineHeight: 1.6 }}>
               {name || 'Downloading judge model weights — this only happens once, then it stays cached.'}
             </div>
@@ -1844,8 +1861,8 @@ function BatchJudgeRunner({ C, status, findings, batchFindingIds, onViewFinding,
         )}
 
         {judgeText && !isLoading && (
-          <div style={{ padding: '12px 14px', background: C.surface, border: `1px solid ${C.blue}44`, borderRadius: 4, maxHeight: 120, overflowY: 'auto' }}>
-            <div style={{ fontSize: 11, color: C.blue, letterSpacing: 1.2, marginBottom: 6 }}>JUDGE OUTPUT</div>
+          <div style={{ padding: '12px 14px', background: C.surface, border: `1px solid ${C.void}44`, borderRadius: 4, maxHeight: 120, overflowY: 'auto' }}>
+            <div style={{ fontSize: 11, color: C.void, letterSpacing: 1.2, marginBottom: 6 }}>JUDGE OUTPUT</div>
             <div style={{ fontSize: 12, color: C.text1, fontFamily: C.mono, lineHeight: 1.6, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
               {judgeText}
             </div>
@@ -1853,7 +1870,7 @@ function BatchJudgeRunner({ C, status, findings, batchFindingIds, onViewFinding,
         )}
         {!judgeText && !isLoading && (
           <div style={{ padding: '10px 14px', background: C.panel, border: `1px solid ${C.border}`, borderRadius: 4, color: C.text3, fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ display: 'inline-block', width: 7, height: 7, borderRadius: 999, background: C.blue, animation: 'pulse 1.2s ease-in-out infinite' }} />
+            <span style={{ display: 'inline-block', width: 7, height: 7, borderRadius: 999, background: C.void, animation: 'pulse 1.2s ease-in-out infinite' }} />
             Sending to judge…
           </div>
         )}
@@ -1889,24 +1906,24 @@ function BatchRunner({ C, status, findings, batchFindingIds, onViewFinding, onSt
         </div>
 
         <div style={{ height: 4, background: C.border, borderRadius: 2, overflow: 'hidden' }}>
-          <div style={{ width: `${pct}%`, height: '100%', background: C.teal, borderRadius: 2, transition: 'width .3s ease' }} />
+          <div style={{ width: `${pct}%`, height: '100%', background: C.signal, borderRadius: 2, transition: 'width .3s ease' }} />
         </div>
 
         <div style={{ padding: '10px 14px', background: C.panel, border: `1px solid ${C.border}`, borderRadius: 4 }}>
           <div style={{ fontSize: 11, color: C.text3, letterSpacing: 1.2, marginBottom: 4 }}>CURRENT PROBE</div>
-          <div style={{ fontSize: 14, color: C.amber, fontWeight: 600 }}>{probeName}</div>
+          <div style={{ fontSize: 14, color: C.copper, fontWeight: 600 }}>{probeName}</div>
         </div>
 
         {response ? (
-          <div style={{ padding: '12px 14px', background: C.surface, border: `1px solid ${C.teal}44`, borderRadius: 4, maxHeight: 160, overflowY: 'auto' }}>
-            <div style={{ fontSize: 11, color: C.teal, letterSpacing: 1.2, marginBottom: 6 }}>MODEL RESPONSE</div>
+          <div style={{ padding: '12px 14px', background: C.surface, border: `1px solid ${C.signal}44`, borderRadius: 4, maxHeight: 160, overflowY: 'auto' }}>
+            <div style={{ fontSize: 11, color: C.signal, letterSpacing: 1.2, marginBottom: 6 }}>MODEL RESPONSE</div>
             <div style={{ fontSize: 13, color: C.text1, fontFamily: C.mono, lineHeight: 1.6, whiteSpace: 'pre-wrap', wordBreak: 'break-word' }}>
               {response}
             </div>
           </div>
         ) : (
           <div style={{ padding: '10px 14px', background: C.panel, border: `1px solid ${C.border}`, borderRadius: 4, color: C.text3, fontSize: 13, display: 'flex', alignItems: 'center', gap: 8 }}>
-            <span style={{ display: 'inline-block', width: 7, height: 7, borderRadius: 999, background: C.teal, animation: 'pulse 1.2s ease-in-out infinite' }} />
+            <span style={{ display: 'inline-block', width: 7, height: 7, borderRadius: 999, background: C.signal, animation: 'pulse 1.2s ease-in-out infinite' }} />
             Sending probe…
           </div>
         )}
@@ -1919,7 +1936,7 @@ function BatchRunner({ C, status, findings, batchFindingIds, onViewFinding, onSt
 }
 
 function ProbeStage({ C, cluster, probe, index, total, victimPrompt, response, running, evalResult, judgeResult, modelReady, judgeMode, onRun, onStop, onSkip }) {
-  const color = C[cluster?.colorKey] || C.amber;
+  const color = C[cluster?.colorKey] || C.copper;
 
   return (
     <div className="es-card" style={{ flex: 1, width: '100%', padding: '24px 24px 64px', display: 'grid', gridTemplateColumns: 'minmax(0,1fr)', gap: 18, overflowY: 'auto' }}>
@@ -1937,7 +1954,7 @@ function ProbeStage({ C, cluster, probe, index, total, victimPrompt, response, r
       <div style={{ background: C.panel, border: `1px solid ${C.border}`, borderRadius: 4, padding: '13px 15px', fontSize: 12.5, color: C.text2, lineHeight: 1.65 }}>
         <SectionTitle C={C}>What you're watching for</SectionTitle>
         <div style={{ marginBottom: 10 }}>
-          <span style={{ color: C.teal, fontWeight: 700 }}>Holds if: </span>
+          <span style={{ color: C.signal, fontWeight: 700 }}>Holds if: </span>
           {probe.expected_secure_behavior || 'The model keeps its instructions and refuses the manipulation.'}
         </div>
         <div>
@@ -2014,7 +2031,7 @@ function TriageStage({
   effectOptions,
   summarize,
 }) {
-  const color = C[cluster?.colorKey] || C.amber;
+  const color = C[cluster?.colorKey] || C.copper;
 
   if (loggedFlash) {
     const vc = getVerdictColor(loggedFlash.verdict, C);
@@ -2038,7 +2055,7 @@ function TriageStage({
 
   if (judging || (judgeResult && !judgeAcknowledged)) {
     const hc = evalResult ? getVerdictColor(evalResult.verdict, C) : C.text3;
-    const jc = judgeResult ? getVerdictColor(judgeResult.verdict, C) : C.teal;
+    const jc = judgeResult ? getVerdictColor(judgeResult.verdict, C) : C.signal;
     return (
       <div className="es-card" style={{ flex: 1, width: '100%', padding: '24px 24px 32px', display: 'flex', flexDirection: 'column', gap: 16, overflowY: 'auto' }}>
         <ConversationTranscript
@@ -2081,15 +2098,15 @@ function TriageStage({
           <div style={{
             flex: '1 1 240px',
             background: judgeResult ? `${jc}0D` : C.panel,
-            border: `1px solid ${judgeResult ? jc + '55' : C.teal + '33'}`,
-            borderLeft: `3px solid ${judgeResult ? jc : C.teal}`,
+            border: `1px solid ${judgeResult ? jc + '55' : C.signal + '33'}`,
+            borderLeft: `3px solid ${judgeResult ? jc : C.signal}`,
             borderRadius: 5,
             padding: '14px 16px',
-            boxShadow: judgeResult ? `0 0 18px ${jc}22` : `0 0 12px ${C.teal}11`,
+            boxShadow: judgeResult ? `0 0 18px ${jc}22` : `0 0 12px ${C.signal}11`,
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-              <div style={{ fontSize: 11, color: C.teal, fontWeight: 900, letterSpacing: 1.4 }}>LLM JUDGE</div>
-              {judging && <SignalBars C={C} color={C.teal} count={6} label="" style={{ display: 'inline-flex' }} />}
+              <div style={{ fontSize: 11, color: C.signal, fontWeight: 900, letterSpacing: 1.4 }}>LLM JUDGE</div>
+              {judging && <SignalBars C={C} color={C.signal} count={6} label="" style={{ display: 'inline-flex' }} />}
               {judgeResult && (
                 <span style={{ fontSize: 12, color: jc, fontWeight: 800, border: `1px solid ${jc}55`, padding: '2px 8px', borderRadius: 2, background: `${jc}18` }}>
                   {getVerdictLabel(judgeResult.verdict)}
@@ -2107,10 +2124,10 @@ function TriageStage({
         {judgeResult && !judgeAcknowledged && (
           <div style={{ position: 'sticky', bottom: 0, padding: '10px 0 4px', background: `linear-gradient(transparent, ${C.bg} 30%)` }}>
             <button onClick={onContinueFromJudge} style={{
-              width: '100%', padding: '14px', borderRadius: 4, border: `1px solid ${C.teal}55`, cursor: 'pointer',
-              background: C.teal, color: C.ink, fontSize: 13, fontWeight: 900, letterSpacing: 2, fontFamily: C.mono,
+              width: '100%', padding: '14px', borderRadius: 4, border: `1px solid ${C.signal}55`, cursor: 'pointer',
+              background: C.signal, color: C.ink, fontSize: 13, fontWeight: 900, letterSpacing: 2, fontFamily: C.mono,
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-              boxShadow: `0 0 20px ${C.teal}44`,
+              boxShadow: `0 0 20px ${C.signal}44`,
             }}>
               CONTINUE ASSESSMENT <ChevronRight size={15} />
             </button>
@@ -2142,7 +2159,7 @@ function TriageStage({
           <div style={{ fontSize: 13, color: C.text2, lineHeight: 1.6, marginTop: 10 }}>{summary.note || evalResult?.reason}</div>
         )}
         {summary.disagreement && (
-          <div style={{ marginTop: 10, fontSize: 12, color: C.amber, lineHeight: 1.5 }}>
+          <div style={{ marginTop: 10, fontSize: 12, color: C.copper, lineHeight: 1.5 }}>
             Evaluators disagree — both signals are preserved in the finding. Your decision decides the record.
           </div>
         )}
@@ -2188,7 +2205,7 @@ function TriageStage({
       {/* 4 — Primary action */}
       <div style={{ position: 'sticky', bottom: 0, marginLeft: -24, marginRight: -24, padding: '12px 24px 16px', background: `linear-gradient(transparent, ${C.bg} 28%)` }}>
         {needsEffectiveness && (
-          <div style={{ marginBottom: 10, fontSize: 12, color: C.amber, textAlign: 'center' }}>
+          <div style={{ marginBottom: 10, fontSize: 12, color: C.copper, textAlign: 'center' }}>
             Complete the control assessment above before confirming this finding as evidence.
           </div>
         )}
@@ -2220,7 +2237,7 @@ function CaseTriageQueue({ C, findings, allCount, onUpdateFinding, onReport, eff
   if (!findings.length) {
     return (
       <div className="es-card" style={{ maxWidth: 560, width: '100%', margin: '0 auto', padding: '64px 24px', textAlign: 'center' }}>
-        <div style={{ fontSize: 12, color: allCount > 0 ? C.teal : C.text3, letterSpacing: 1.4, fontWeight: 900 }}>
+        <div style={{ fontSize: 12, color: allCount > 0 ? C.signal : C.text3, letterSpacing: 1.4, fontWeight: 900 }}>
           {allCount > 0 ? 'ALL FINDINGS ASSESSED' : 'NO FINDINGS TO TRIAGE'}
         </div>
         <div style={{ fontSize: 13, color: C.text2, marginTop: 10 }}>
@@ -2247,7 +2264,7 @@ function CaseTriageQueue({ C, findings, allCount, onUpdateFinding, onReport, eff
   return (
     <div className="es-card" style={{ flex: 1, padding: '24px 24px 64px', display: 'flex', flexDirection: 'column', gap: 12, overflowY: 'auto' }}>
       <div>
-        <div style={{ fontSize: 10, color: C.amber, letterSpacing: 1.6, textTransform: 'uppercase', fontWeight: 900 }}>Governance triage queue</div>
+        <div style={{ fontSize: 10, color: C.copper, letterSpacing: 1.6, textTransform: 'uppercase', fontWeight: 900 }}>Governance triage queue</div>
         <div style={{ fontSize: 13, color: C.text2, marginTop: 6 }}>Complete the effectiveness assessment and control gap statement for each confirmed finding.</div>
       </div>
       {findings.map((finding, idx) => {
@@ -2289,7 +2306,7 @@ function EffectivenessButtonGroup({ C, options, value, onChange }) {
   return (
     <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
       {options.map(option => {
-        const color = C[option.colorKey] || C.amber;
+        const color = C[option.colorKey] || C.copper;
         const active = value === option.value;
         return (
           <button key={option.value} onClick={() => onChange(option.value)} title={option.help} style={{

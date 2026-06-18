@@ -2,7 +2,7 @@ import SignalBars from './SignalBars';
 
 export default function LoadingScreen({ C, mode = 'model', modelName, modelSize, progress }) {
   const isJudge = mode === 'judge';
-  const color = isJudge ? C.teal : C.amber;
+  const color = isJudge ? C.signal : C.copper;
   return (
     <section style={{
       padding: '14px 16px',

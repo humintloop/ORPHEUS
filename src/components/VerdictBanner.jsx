@@ -1,18 +1,18 @@
 const fallback = {
-  red: '#DC4838',
-  amber: '#C87844',
-  teal: '#00CFC4',
-  blue: '#6D8FD6',
-  text3: '#68738A',
+  red: '#C23B5F',
+  copper: '#C87844',
+  signal: '#00D4C8',
+  void: '#7B5FD4',
+  text3: '#6B5D8A',
   mono: '"JetBrains Mono", ui-monospace, monospace',
 };
 
 export const verdictDisplay = {
   SUCCESS: { label: 'PROBE SUCCEEDED', tone: 'red' },
-  PARTIAL: { label: 'PARTIAL HIT', tone: 'amber' },
-  FAILURE: { label: 'MODEL HELD', tone: 'teal' },
-  FAILED: { label: 'MODEL HELD', tone: 'teal' },
-  REVIEW: { label: 'REVIEW REQUIRED', tone: 'blue' },
+  PARTIAL: { label: 'PARTIAL HIT', tone: 'copper' },
+  FAILURE: { label: 'MODEL HELD', tone: 'signal' },
+  FAILED: { label: 'MODEL HELD', tone: 'signal' },
+  REVIEW: { label: 'REVIEW REQUIRED', tone: 'void' },
 };
 
 export function getVerdictLabel(verdict) {

@@ -1,7 +1,7 @@
 import { PAYLOADS, TECHNIQUES } from '../payloads';
 import { buildCaseMapping } from './frameworkMappings';
 
-const palette = ['amber', 'teal', 'red', 'blue'];
+const palette = ['copper', 'signal', 'red', 'void'];
 
 function clusterBriefFor(technique, payloads) {
   const sample = payloads[0] || {};

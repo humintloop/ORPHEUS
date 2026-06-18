@@ -99,7 +99,7 @@ ${list(readinessGaps)}
 ### Official Mitigation References
 ${mitigationReferenceList(officialMitigations)}
 
-### ELICIT Recommended Actions
+### ORPHEUS Recommended Actions
 ${list(recommendedMitigations)}
 
 ### Retest Guidance
@@ -177,7 +177,7 @@ ${activeFindings.length ? activeFindings.map(buildFindingMarkdown).join('\n---\n
 - Browser inference is constrained by local hardware, WebGPU support, cache storage, browser profile state, and tab lifecycle behavior.
 - First-run model downloads and judge-mode model swaps can temporarily pause the page while model artifacts download, compile, or reload.
 - The heuristic evaluator is triage-oriented; \`REVIEW\` or \`PARTIAL\` should not be treated as a final pass/fail conclusion.
-- Official mitigation references preserve source IDs and names from MITRE ATLAS. ELICIT recommended actions and retest guidance are project-defined implementation guidance.
+- Official mitigation references preserve source IDs and names from MITRE ATLAS. ORPHEUS recommended actions and retest guidance are project-defined implementation guidance.
 - LLM-as-judge mode can introduce evaluator bias or prompt-injection risk; judge outputs should be treated as supporting evidence, not ground truth.
 - Material disagreement between heuristic and judge results is intentionally preserved as a manual-review signal.
 - ISO/IEC 42001 and EU AI Act references are relevance mappings only and depend on system role, risk classification, management-system scope, and jurisdictional scope.
@@ -241,7 +241,7 @@ export function generateAuditBriefHtml(findings = [], metadata = {}) {
 <html>
 <head>
 <meta charset="utf-8" />
-<title>ELICIT Audit Brief</title>
+<title>ORPHEUS Audit Brief</title>
 <style>
 body{margin:0;background:#0A0C16;color:#E6D6C8;font-family:"JetBrains Mono",ui-monospace,monospace;line-height:1.55}
 .banner{background:#C87844;color:#0A0C16;padding:10px 24px;font-weight:900;letter-spacing:2px;text-align:center}
@@ -263,7 +263,7 @@ pre{white-space:pre-wrap;background:#0A0C16;border:1px solid #1C2238;padding:12p
 <body>
 <div class="banner">UNCLASSIFIED // AI ASSURANCE WORKPAPER // LOCAL-FIRST EVIDENCE</div>
 <main>
-  <h1>ELICIT AUDIT BRIEF</h1>
+  <h1>ORPHEUS AUDIT BRIEF</h1>
   <div class="meta">
     <p><b>Generated</b>${escapeHtml(generatedAt)}</p>
     <p><b>Assurance Profile</b>${escapeHtml(metadata.assuranceProfile || ASSURANCE_PROFILE.label)}</p>

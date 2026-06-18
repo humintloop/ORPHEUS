@@ -46,7 +46,7 @@ export default function FrameworkMappingExplainer({
           <Mini C={C} label="Profile" value={ASSURANCE_PROFILE.label} detail={mapping.eu_ai_act_scope || 'conditional-readiness'} />
         </div>
 
-        <ListSection C={C} title="Mapped ELICIT controls" items={mappedControls.map(control => ({
+        <ListSection C={C} title="Mapped ORPHEUS controls" items={mappedControls.map(control => ({
           key: control.id,
           title: `${control.id} - ${control.name}`,
           text: `${control.domain}: ${control.objective}`,
@@ -165,7 +165,7 @@ function FrameworkGapTable({ C, techniqueId, mitreLabel, owasp, owaspLabel, mapp
 
 function Cell({ C, children, strong, accent }) {
   return (
-    <div style={{ padding: '8px 9px', fontSize: 12, color: accent ? C.amber : strong ? C.text1 : C.text2, lineHeight: 1.45 }}>
+    <div style={{ padding: '8px 9px', fontSize: 12, color: accent ? C.copper : strong ? C.text1 : C.text2, lineHeight: 1.45 }}>
       {children}
     </div>
   );
@@ -189,7 +189,7 @@ function ListSection({ C, title, items }) {
       <div style={{ display: 'grid', gap: 7 }}>
         {items.map(item => (
           <div key={item.key}>
-            <div style={{ fontSize: 12, color: C.amber, fontWeight: 800 }}>{item.title}</div>
+            <div style={{ fontSize: 12, color: C.copper, fontWeight: 800 }}>{item.title}</div>
             <div style={{ fontSize: 12, color: C.text2, lineHeight: 1.45, marginTop: 2 }}>{item.text}</div>
           </div>
         ))}

@@ -37,9 +37,9 @@ export default function DossierHome({ C, findings, clusters, activeCase, onEnter
 
       {/* Resume banner */}
       {activeCase?.caseId && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', background: C.amberBg, border: `1px solid ${C.amber}55`, borderLeft: `3px solid ${C.amber}`, borderRadius: 5, padding: '12px 16px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap', background: C.copperBg, border: `1px solid ${C.copper}55`, borderLeft: `3px solid ${C.copper}`, borderRadius: 5, padding: '12px 16px' }}>
           <div style={{ flex: 1, minWidth: 220, fontSize: 14, color: C.text1, fontWeight: 600 }}>
-            Resume <span style={{ color: C.amber, fontFamily: C.mono }}>{activeCase.caseId}</span> — probe {Math.min((activeCase.probeIndex || 0) + 1, activeCase.total || 1)}/{activeCase.total || 0} · {activeCase.findingsCount || 0} findings
+            Resume <span style={{ color: C.copper, fontFamily: C.mono }}>{activeCase.caseId}</span> — probe {Math.min((activeCase.probeIndex || 0) + 1, activeCase.total || 1)}/{activeCase.total || 0} · {activeCase.findingsCount || 0} findings
           </div>
           <button onClick={onResume} style={primaryBtn(C)}>
             <RefreshCw size={13} /> CONTINUE <ChevronRight size={13} />
@@ -52,7 +52,7 @@ export default function DossierHome({ C, findings, clusters, activeCase, onEnter
         <div style={{ fontSize: 11, color: C.text3, letterSpacing: 2, textTransform: 'uppercase', marginBottom: 10 }}>
           Local-first adversarial assurance
         </div>
-        <h1 style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: 52, color: C.amber, fontWeight: 700, letterSpacing: 10, lineHeight: 1, margin: 0 }}>ELICIT</h1>
+        <h1 style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: 52, color: C.copper, fontWeight: 700, letterSpacing: 10, lineHeight: 1, margin: 0 }}>ORPHEUS</h1>
         <p style={{ fontSize: 16, color: C.text2, lineHeight: 1.7, maxWidth: 540, marginTop: 14, marginBottom: 0 }}>
           Red-team LLMs in the browser. Preserve the evidence. Map the control gap.
         </p>
@@ -81,13 +81,13 @@ export default function DossierHome({ C, findings, clusters, activeCase, onEnter
             {cases.slice(0, 8).map(item => (
               <button key={item.caseFileId} onClick={onReport} style={{
                 textAlign: 'left', background: C.panel, border: `1px solid ${C.border}`,
-                borderLeft: `3px solid ${item.needsReview ? C.amber : C.teal}`,
+                borderLeft: `3px solid ${item.needsReview ? C.copper : C.signal}`,
                 borderRadius: 4, padding: '12px 14px', cursor: 'pointer',
               }}>
                 <div style={{ display: 'flex', gap: 10, alignItems: 'baseline', flexWrap: 'wrap' }}>
-                  <span style={{ fontSize: 14, color: C.amber, fontWeight: 700, fontFamily: C.mono }}>{item.caseFileId}</span>
+                  <span style={{ fontSize: 14, color: C.copper, fontWeight: 700, fontFamily: C.mono }}>{item.caseFileId}</span>
                   <span style={{ fontSize: 13, color: C.text3 }}>{item.count} finding{item.count !== 1 ? 's' : ''}</span>
-                  {item.needsReview && <span style={{ fontSize: 12, color: C.amber }}>needs review</span>}
+                  {item.needsReview && <span style={{ fontSize: 12, color: C.copper }}>needs review</span>}
                   <span style={{ fontSize: 13, color: C.text3, marginLeft: 'auto' }}>{new Date(item.latestTimestamp).toLocaleDateString()}</span>
                 </div>
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginTop: 8 }}>
@@ -110,7 +110,7 @@ export default function DossierHome({ C, findings, clusters, activeCase, onEnter
           <div style={{ display: 'grid', gap: 6 }}>
             {coverage.map(([label, count]) => {
               const cluster = clusters.find(cl => cl.name === label);
-              const color = cluster ? (C[cluster.colorKey] || C.amber) : C.text3;
+              const color = cluster ? (C[cluster.colorKey] || C.copper) : C.text3;
               const pct = Math.round((count / findings.length) * 100);
               return (
                 <div key={label} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 14px', background: C.panel, border: `1px solid ${C.border}`, borderRadius: 4 }}>
@@ -156,8 +156,8 @@ function Stat({ C, value, label }) {
 function primaryBtn(C) {
   return {
     display: 'inline-flex', alignItems: 'center', gap: 7,
-    padding: '11px 18px', background: C.amber, color: C.ink,
-    border: `1px solid ${C.amber}`, borderRadius: 4, cursor: 'pointer',
+    padding: '11px 18px', background: C.copper, color: C.ink,
+    border: `1px solid ${C.copper}`, borderRadius: 4, cursor: 'pointer',
     fontSize: 13, fontWeight: 800, letterSpacing: 1.2,
   };
 }

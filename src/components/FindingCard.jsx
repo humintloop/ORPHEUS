@@ -18,8 +18,8 @@ const dispositionHelp = {
 
 const effectivenessOptions = [
   { value: 'ABSENT', label: 'ABSENT', help: 'Control does not exist or was never implemented', colorKey: 'red' },
-  { value: 'INEFFECTIVE', label: 'INEFFECTIVE', help: 'Control exists but failed completely under testing', colorKey: 'amber' },
-  { value: 'PARTIAL', label: 'PARTIAL', help: 'Control exists and partially functions but has exploitable gaps', colorKey: 'amber' },
+  { value: 'INEFFECTIVE', label: 'INEFFECTIVE', help: 'Control exists but failed completely under testing', colorKey: 'copper' },
+  { value: 'PARTIAL', label: 'PARTIAL', help: 'Control exists and partially functions but has exploitable gaps', colorKey: 'copper' },
 ];
 
 const normalizeEffectiveness = value => {
@@ -30,8 +30,8 @@ const normalizeEffectiveness = value => {
 
 const effectivenessColorFor = (C, value) => {
   if (value === 'ABSENT') return C.red;
-  if (value === 'INEFFECTIVE') return C.amber;
-  if (value === 'PARTIAL') return C.amber;
+  if (value === 'INEFFECTIVE') return C.copper;
+  if (value === 'PARTIAL') return C.copper;
   return C.text3;
 };
 
@@ -63,7 +63,7 @@ export default function FindingCard({ C, finding: f, auditorView, onUpdate, onDe
     reviewerReviewedAt: new Date().toISOString(),
   });
 
-  const decisionColor = reviewerDecision === 'CONFIRMED' ? C.red : reviewerDecision === 'FALSE_POSITIVE' ? C.teal : reviewerDecision === 'UNREVIEWED' ? C.amber : C.text2;
+  const decisionColor = reviewerDecision === 'CONFIRMED' ? C.red : reviewerDecision === 'FALSE_POSITIVE' ? C.signal : reviewerDecision === 'UNREVIEWED' ? C.copper : C.text2;
   const auditReady = Boolean(assessedEffectiveness && f.controlGapStatement);
   const hasRemediation = officialMitigations.length > 0 || recommendedMitigations.length > 0 || retestGuidance.length > 0;
   const tabs = [
@@ -88,7 +88,7 @@ export default function FindingCard({ C, finding: f, auditorView, onUpdate, onDe
           <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap' }}>
             <StatusChip C={C} color={decisionColor} label={reviewerDecision.replaceAll('_', ' ')} />
             <StatusChip C={C} color={assessedEffectiveness ? effectivenessColor : C.text3} label={assessedEffectiveness ? effectiveness.replaceAll('_', ' ') : 'NOT ASSESSED'} outline />
-            <StatusChip C={C} color={auditReady ? C.teal : C.amber} label={auditReady ? 'AUDIT-READY' : 'NEEDS REVIEW'} dot />
+            <StatusChip C={C} color={auditReady ? C.signal : C.copper} label={auditReady ? 'AUDIT-READY' : 'NEEDS REVIEW'} dot />
           </div>
         </div>
         <button style={{ flexShrink: 0, display: 'flex', alignItems: 'center', gap: 5, padding: '7px 12px', background: expanded ? C.surface : 'transparent', border: `1px solid ${C.borderHi}`, color: C.text2, fontSize: 12, fontWeight: 700, letterSpacing: .8, borderRadius: 3, cursor: 'pointer' }}>
@@ -118,7 +118,7 @@ export default function FindingCard({ C, finding: f, auditorView, onUpdate, onDe
                 <FieldLabel C={C}>Effectiveness assessment</FieldLabel>
                 <div style={{ display: 'flex', gap: 7, flexWrap: 'wrap' }}>
                   {effectivenessOptions.map(option => {
-                    const color = C[option.colorKey] || C.amber;
+                    const color = C[option.colorKey] || C.copper;
                     const active = assessedEffectiveness === option.value;
                     return (
                       <button key={option.value} onClick={() => updateEffectiveness(option.value)} title={option.help} style={{
@@ -162,7 +162,7 @@ export default function FindingCard({ C, finding: f, auditorView, onUpdate, onDe
               <button key={id} onClick={() => setTab(id)} style={{
                 padding: '10px 14px', background: 'transparent', border: 'none', cursor: 'pointer',
                 color: tab === id ? C.text1 : C.text3, fontSize: 12.5, fontWeight: tab === id ? 700 : 500,
-                borderBottom: `2px solid ${tab === id ? C.amber : 'transparent'}`, marginBottom: -1,
+                borderBottom: `2px solid ${tab === id ? C.copper : 'transparent'}`, marginBottom: -1,
               }}>
                 {label}
               </button>
@@ -181,8 +181,8 @@ export default function FindingCard({ C, finding: f, auditorView, onUpdate, onDe
                 </div>
 
                 {f.evaluationDisagreement && (
-                  <div style={{ background: C.amberBg, border: `1px solid ${C.amber}40`, padding: '9px 11px', borderRadius: 3 }}>
-                    <div style={{ fontSize: 12, color: C.amber, letterSpacing: 1, marginBottom: 4, fontWeight: 800 }}>EVALUATORS DISAGREE</div>
+                  <div style={{ background: C.copperBg, border: `1px solid ${C.copper}40`, padding: '9px 11px', borderRadius: 3 }}>
+                    <div style={{ fontSize: 12, color: C.copper, letterSpacing: 1, marginBottom: 4, fontWeight: 800 }}>EVALUATORS DISAGREE</div>
                     <div style={{ fontSize: 13, color: C.text2, lineHeight: 1.45 }}>{f.evaluationNote}</div>
                   </div>
                 )}
@@ -200,8 +200,8 @@ export default function FindingCard({ C, finding: f, auditorView, onUpdate, onDe
             {tab === 'control' && (
               <>
                 {auditorView && (
-                  <div style={{ background: C.amberBg, border: `1px solid ${C.amber}44`, borderLeft: `3px solid ${C.amber}`, borderRadius: 3, padding: '11px 13px' }}>
-                    <div style={{ fontSize: 12, color: C.amber, letterSpacing: 1, fontWeight: 800, marginBottom: 8 }}>AUDITOR VIEW</div>
+                  <div style={{ background: C.copperBg, border: `1px solid ${C.copper}44`, borderLeft: `3px solid ${C.copper}`, borderRadius: 3, padding: '11px 13px' }}>
+                    <div style={{ fontSize: 12, color: C.copper, letterSpacing: 1, fontWeight: 800, marginBottom: 8 }}>AUDITOR VIEW</div>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))', gap: 8, marginBottom: 8 }}>
                       <Mini C={C} label="System" value={f.systemUnderTest || 'Not recorded'} />
                       <Mini C={C} label="Prompt hash" value={f.promptHash || 'Not recorded'} />
@@ -225,7 +225,7 @@ export default function FindingCard({ C, finding: f, auditorView, onUpdate, onDe
             {tab === 'remediation' && (
               <>
                 {officialMitigations.length > 0 && <ListBlock C={C} label="OFFICIAL MITIGATION REFERENCES" items={officialMitigations.map(i => `${i.source}: ${i.id} — ${i.name}`)} />}
-                {recommendedMitigations.length > 0 && <ListBlock C={C} label="ELICIT RECOMMENDED ACTIONS" items={recommendedMitigations} />}
+                {recommendedMitigations.length > 0 && <ListBlock C={C} label="ORPHEUS RECOMMENDED ACTIONS" items={recommendedMitigations} />}
                 {retestGuidance.length > 0 && <ListBlock C={C} label="RETEST GUIDANCE" items={retestGuidance} />}
               </>
             )}
@@ -378,7 +378,7 @@ function VerdictCard({ C, label, verdict, reason, isJudge }) {
       boxShadow: verdict ? `0 0 18px ${color}22` : 'none',
     }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: reason ? 10 : 0 }}>
-        <span style={{ fontSize: 11, color: isJudge ? C.teal : C.text3, fontWeight: 900, letterSpacing: 1.4, textTransform: 'uppercase' }}>{label}</span>
+        <span style={{ fontSize: 11, color: isJudge ? C.signal : C.text3, fontWeight: 900, letterSpacing: 1.4, textTransform: 'uppercase' }}>{label}</span>
         <span style={{
           fontSize: 12, color, fontWeight: 800,
           background: verdict ? `${color}18` : C.surface,

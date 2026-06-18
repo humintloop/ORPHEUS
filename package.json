@@ -1,5 +1,5 @@
 {
-  "name": "elicit",
+  "name": "orpheus",
   "version": "0.2.0",
   "description": "Local-first adversarial assurance lab for LLM evaluation and AI control mapping",
   "type": "module",

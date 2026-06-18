@@ -4,7 +4,7 @@ const fallback = {
   mono: '"JetBrains Mono", ui-monospace, monospace',
 };
 
-export default function SignalBars({ C = fallback, color = C.amber, label, count = 12 }) {
+export default function SignalBars({ C = fallback, color = C.copper, label, count = 12 }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10 }}>
       <style>{`
