@@ -8,11 +8,15 @@ import {
 import SignalBars from './components/SignalBars';
 import FindingsReport from './components/FindingsReport';
 import DossierHome from './components/DossierHome';
+import HarnessHome from './components/HarnessHome';
 import AttackNavigator from './components/AttackNavigator';
 import ConversationTranscript from './components/ConversationTranscript';
 import FrameworkMappingExplainer from './components/FrameworkMappingExplainer';
 import { PAYLOADS, TECHNIQUES, PRESETS, EVALUATION_CASE_SCHEMA_VERSION, evaluateResponse } from './payloads';
 import { CLUSTERS } from './data/clusters';
+import { ORPHEUS_CASES } from './data/orpheusCases';
+import { CONTROL_PROFILES } from './data/controlProfiles';
+import { runCase } from './harness/runCase';
 import { ASSURANCE_PROFILE, CONTROL_SET, FRAMEWORK_MAPPING_VERSION, buildCaseMapping } from './data/frameworkMappings';
 import { getMitigationMapping } from './data/mitigationMappings';
 import { downloadHtml, downloadMarkdown, generateAssessmentReport, generateAuditBriefHtml } from './reports/reportGenerator';
@@ -215,7 +219,7 @@ function summarizeEvaluation(heuristic, judge) {
 
 // ── Stages ────────────────────────────────────────────────────────────────────
 // home → case → loading → select → probe/batch → triage ; report is overlay
-const STAGE = { HOME: 'home', CASE: 'case', LOADING: 'loading', SELECT: 'select', PROBE: 'probe', TRIAGE: 'triage', REPORT: 'report' };
+const STAGE = { HOME: 'home', HARNESS: 'harness', CASE: 'case', LOADING: 'loading', SELECT: 'select', PROBE: 'probe', TRIAGE: 'triage', REPORT: 'report' };
 
 function CompatGate({ C }) {
   const isMobile = typeof navigator !== 'undefined' && /Mobi|Android|iPhone|iPad/i.test(navigator.userAgent);
@@ -311,6 +315,14 @@ export default function App() {
   const [attackQuery, setAttackQuery] = useState('');
   const [navOpen, setNavOpen] = useState(false);
 
+  // Control-validation harness
+  const [harnessCaseId, setHarnessCaseId] = useState(ORPHEUS_CASES[0]?.id || '');
+  const [harnessProfileId, setHarnessProfileId] = useState('baseline');
+  const [customHarnessControls, setCustomHarnessControls] = useState(CONTROL_PROFILES.custom.controls);
+  const [evidenceContract, setEvidenceContract] = useState(null);
+  const [harnessRunning, setHarnessRunning] = useState(false);
+  const [harnessComparisonHistory, setHarnessComparisonHistory] = useState({});
+
   // Batch queue
   const [selectedProbeIds, setSelectedProbeIds] = useState(new Set());
   const [batchRunning, setBatchRunning] = useState(false);
@@ -382,6 +394,9 @@ export default function App() {
   const activeControlIds = selectedControlIds.length
     ? selectedControlIds
     : buildCaseMapping(probe?.technique || clusterId, probe || clusterPayloads[0] || {}).mapped_controls || [];
+  const selectedHarnessCase = ORPHEUS_CASES.find(item => item.id === harnessCaseId) || ORPHEUS_CASES[0];
+  const currentHarnessComparison = selectedHarnessCase ? harnessComparisonHistory[selectedHarnessCase.id] || {} : {};
+
   const progressOutcomes = clusterPayloads.reduce((acc, payload) => {
     const finding = currentCaseFindings.find(f => f.caseId === (payload.case_id || payload.id));
     if (finding) acc[payload.id] = finding.verdict;
@@ -897,6 +912,28 @@ export default function App() {
     setJudgeMode(true);
     setRunPreset('standard');
   };
+  const runHarnessDemo = async () => {
+    if (!selectedHarnessCase) return;
+    const baseProfile = CONTROL_PROFILES[harnessProfileId] || CONTROL_PROFILES.baseline;
+    const profile = baseProfile.id === 'custom'
+      ? { ...baseProfile, controls: customHarnessControls }
+      : baseProfile;
+    setHarnessRunning(true);
+    try {
+      const contract = await runCase(selectedHarnessCase, profile);
+      setEvidenceContract(contract);
+      setHarnessComparisonHistory(prev => ({
+        ...prev,
+        [selectedHarnessCase.id]: {
+          ...(prev[selectedHarnessCase.id] || {}),
+          [profile.id]: contract.control_verdict,
+        },
+      }));
+    } finally {
+      setHarnessRunning(false);
+    }
+  };
+
   const applyRunPreset = (presetId) => {
     setRunPreset(presetId);
     if (presetId === 'quick') {
@@ -953,7 +990,7 @@ export default function App() {
         </div>
       </div>
 
-      {stage !== STAGE.HOME && stage !== STAGE.CASE && (
+      {stage !== STAGE.HOME && stage !== STAGE.HARNESS && stage !== STAGE.CASE && (
         <div className="case-id-bar" style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 12, color: C.text3 }}>
           <span style={{ color: C.border }}>│</span>
           <span style={{ color: C.copper, letterSpacing: 1, fontFamily: C.mono }}>{caseId}</span>
@@ -967,12 +1004,17 @@ export default function App() {
             HOME
           </button>
         )}
+        {stage !== STAGE.HARNESS && (
+          <button onClick={() => setStage(STAGE.HARNESS)} style={btn(C, 'ghost')}>
+            CONTROL HARNESS
+          </button>
+        )}
         {findings.length > 0 && stage !== STAGE.REPORT && (
           <button className="hide-mobile" onClick={() => setStage(STAGE.REPORT)} style={btn(C, 'ghost')}>
             <FileText size={12} /> VIEW REPORT ({findings.length} FINDING{findings.length === 1 ? '' : 'S'})
           </button>
         )}
-        {stage !== STAGE.HOME && stage !== STAGE.CASE && (
+        {stage !== STAGE.HOME && stage !== STAGE.HARNESS && stage !== STAGE.CASE && (
           <button onClick={newCase} style={btn(C, 'ghost')}>
             <FolderOpen size={12} /> NEW CASE
           </button>
@@ -985,7 +1027,7 @@ export default function App() {
   const triageTotal = confirmedCaseFindings.length;
   const triageAwaiting = triageQueue.length > 0;
   const triageDotColor = triageAwaiting ? C.copper : triageTotal > 0 ? C.signal : C.borderHi;
-  const stageRail = stage !== STAGE.HOME && stage !== STAGE.CASE && (
+  const stageRail = stage !== STAGE.HOME && stage !== STAGE.HARNESS && stage !== STAGE.CASE && (
     <div style={{ display: 'flex', alignItems: 'center', gap: 0, padding: '8px 20px', borderBottom: `1px solid ${C.border}`, background: 'rgba(10,12,22,.7)', flexShrink: 0, overflowX: 'auto' }}>
       {[
         ['Briefing', stage === STAGE.LOADING, () => setStage(STAGE.CASE), true],
@@ -1014,7 +1056,7 @@ export default function App() {
       <CompatGate C={C} />
       {headerBar}
       {stageRail}
-      {stage !== STAGE.HOME && stage !== STAGE.CASE && stage !== STAGE.SELECT && (
+      {stage !== STAGE.HOME && stage !== STAGE.HARNESS && stage !== STAGE.CASE && stage !== STAGE.SELECT && (
         <SessionContextBar
           C={C}
           stage={stage}
@@ -1040,8 +1082,28 @@ export default function App() {
             clusters={CLUSTERS}
             activeCase={resumableCase ? { caseId, probeIndex, total: clusterPayloads.length, findingsCount: auditFindingCount } : null}
             onEnter={newCase}
+            onHarness={() => setStage(STAGE.HARNESS)}
             onResume={() => setStage(modelStatus === 'ready' ? STAGE.PROBE : STAGE.CASE)}
             onReport={() => setStage(STAGE.REPORT)}
+          />
+        )}
+
+        {stage === STAGE.HARNESS && (
+          <HarnessHome
+            C={C}
+            cases={ORPHEUS_CASES}
+            profiles={CONTROL_PROFILES}
+            selectedCaseId={harnessCaseId}
+            onSelectCase={(id) => { setHarnessCaseId(id); setEvidenceContract(null); }}
+            selectedProfileId={harnessProfileId}
+            onSelectProfile={setHarnessProfileId}
+            customControls={customHarnessControls}
+            onCustomChange={setCustomHarnessControls}
+            onRun={runHarnessDemo}
+            running={harnessRunning}
+            contract={evidenceContract}
+            comparisonHistory={currentHarnessComparison}
+            onBackToLab={newCase}
           />
         )}
 
@@ -1281,6 +1343,7 @@ function GlobalStyle({ C }) {
       @media (max-width: 760px) {
         .home-hero-grid { grid-template-columns: minmax(0, 1fr) !important; }
         .workstation-layout { flex-direction: column; overflow-y: auto !important; }
+        .harness-grid { grid-template-columns: minmax(0, 1fr) !important; }
         .attack-nav { width: 44px !important; min-width: 44px !important; }
         .case-id-bar { display: none !important; }
         .header-nav-buttons { gap: 6px !important; }

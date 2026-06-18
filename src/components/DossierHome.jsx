@@ -1,4 +1,4 @@
-import { ChevronRight, FileText, FolderOpen, RefreshCw } from 'lucide-react';
+import { ChevronRight, FileText, FolderOpen, RefreshCw, ShieldCheck } from 'lucide-react';
 import { getVerdictColor, getVerdictLabel } from './VerdictBanner';
 
 function groupFindingsByCase(findings = []) {
@@ -26,7 +26,7 @@ function groupFindingsByCluster(findings = [], clusters = []) {
   return Object.entries(counts).sort((a, b) => b[1] - a[1]);
 }
 
-export default function DossierHome({ C, findings, clusters, activeCase, onEnter, onResume, onReport }) {
+export default function DossierHome({ C, findings, clusters, activeCase, onEnter, onHarness, onResume, onReport }) {
   const cases = groupFindingsByCase(findings);
   const coverage = groupFindingsByCluster(findings, clusters);
   const hasFindingsNeedingReview = cases.some(c => c.needsReview);
@@ -57,8 +57,11 @@ export default function DossierHome({ C, findings, clusters, activeCase, onEnter
           Red-team LLMs in the browser. Preserve the evidence. Map the control gap.
         </p>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 24 }}>
-          <button onClick={onEnter} style={primaryBtn(C)}>
-            BEGIN ASSESSMENT <ChevronRight size={15} />
+          <button onClick={onHarness} style={primaryBtn(C)}>
+            <ShieldCheck size={15} /> CONTROL HARNESS <ChevronRight size={15} />
+          </button>
+          <button onClick={onEnter} style={ghostBtn(C)}>
+            MODEL LAB <ChevronRight size={15} />
           </button>
           {findings.length > 0 && (
             <button onClick={onReport} style={ghostBtn(C)}>
@@ -129,7 +132,7 @@ export default function DossierHome({ C, findings, clusters, activeCase, onEnter
       {/* Empty state hint */}
       {findings.length === 0 && (
         <div style={{ fontSize: 13, color: C.text3, lineHeight: 1.6 }}>
-          No findings yet — hit Begin Assessment above to start building an evidence record.
+          No findings yet — open the Control Harness for deterministic control evidence, or use the Model Lab for local/API model probing.
         </div>
       )}
     </main>
