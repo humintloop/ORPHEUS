@@ -267,10 +267,10 @@ npm run preview
 - Markdown, JSON exports
 - AIUC-1, ISO/IEC 42001, EU AI Act, MITRE ATLAS, OWASP LLM Top 10, NIST AI RMF mappings
 - Phase 2 Authority Registry and mock tool router foundation
+- Agentic mock-router UI with tool-sequence inspection
 
 ## What's Next
 
-- Agentic harness UI for mock tool-router runs
 - Indirect injection probe cluster expansion (AML.T0051.001)
 - Configurable Authority Registry editor
 - AIUC-1 evidence export format

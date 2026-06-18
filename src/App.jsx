@@ -17,6 +17,7 @@ import { CLUSTERS } from './data/clusters';
 import { ORPHEUS_CASES } from './data/orpheusCases';
 import { CONTROL_PROFILES } from './data/controlProfiles';
 import { runCase } from './harness/runCase';
+import { runAgenticCase } from './harness/runAgenticCase';
 import { ASSURANCE_PROFILE, CONTROL_SET, FRAMEWORK_MAPPING_VERSION, buildCaseMapping } from './data/frameworkMappings';
 import { getMitigationMapping } from './data/mitigationMappings';
 import { downloadHtml, downloadMarkdown, generateAssessmentReport, generateAuditBriefHtml } from './reports/reportGenerator';
@@ -318,6 +319,7 @@ export default function App() {
   // Control-validation harness
   const [harnessCaseId, setHarnessCaseId] = useState(ORPHEUS_CASES[0]?.id || '');
   const [harnessProfileId, setHarnessProfileId] = useState('baseline');
+  const [harnessRunMode, setHarnessRunMode] = useState('control');
   const [customHarnessControls, setCustomHarnessControls] = useState(CONTROL_PROFILES.custom.controls);
   const [evidenceContract, setEvidenceContract] = useState(null);
   const [harnessRunning, setHarnessRunning] = useState(false);
@@ -920,7 +922,9 @@ export default function App() {
       : baseProfile;
     setHarnessRunning(true);
     try {
-      const contract = await runCase(selectedHarnessCase, profile);
+      const contract = harnessRunMode === 'agentic'
+        ? await runAgenticCase(selectedHarnessCase, profile)
+        : await runCase(selectedHarnessCase, profile);
       setEvidenceContract(contract);
       setHarnessComparisonHistory(prev => ({
         ...prev,
@@ -1096,6 +1100,8 @@ export default function App() {
             selectedCaseId={harnessCaseId}
             onSelectCase={(id) => { setHarnessCaseId(id); setEvidenceContract(null); }}
             selectedProfileId={harnessProfileId}
+            runMode={harnessRunMode}
+            onRunModeChange={(mode) => { setHarnessRunMode(mode); setEvidenceContract(null); }}
             onSelectProfile={setHarnessProfileId}
             customControls={customHarnessControls}
             onCustomChange={setCustomHarnessControls}

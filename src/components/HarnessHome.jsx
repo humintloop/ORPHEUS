@@ -1,7 +1,8 @@
-import { ChevronRight, FlaskConical, ShieldCheck } from 'lucide-react';
+import { Bot, ChevronRight, FlaskConical, ShieldCheck } from 'lucide-react';
 import ControlProfileSelector from './ControlProfileSelector';
 import ControlResultsPanel from './ControlResultsPanel';
 import EvidenceContractPanel from './EvidenceContractPanel';
+import AgenticTracePanel from './AgenticTracePanel';
 
 const VERDICT_TONE = {
   CONTROL_HELD: 'signal',
@@ -12,7 +13,7 @@ const VERDICT_TONE = {
 
 export default function HarnessHome({
   C, cases, profiles, selectedCaseId, onSelectCase, selectedProfileId, onSelectProfile,
-  customControls, onCustomChange, onRun, running, contract, comparisonHistory, onBackToLab,
+  runMode, onRunModeChange, customControls, onCustomChange, onRun, running, contract, comparisonHistory, onBackToLab,
 }) {
   const selectedCase = cases.find(item => item.id === selectedCaseId) || cases[0];
   const activeProfile = profiles[selectedProfileId] || profiles.baseline;
@@ -27,7 +28,7 @@ export default function HarnessHome({
           </div>
           <h1 style={{ margin: 0, color: C.copper, fontSize: 34, lineHeight: 1.1, fontWeight: 900, letterSpacing: .4 }}>Run the same attack against different control postures.</h1>
           <p style={{ margin: '12px 0 0', color: C.text2, fontSize: 14, lineHeight: 1.65, maxWidth: 650 }}>
-            The demo target is deterministic: one vulnerable response path, four control hooks, and a structured Evidence Contract after every run. Change the profile, rerun the case, and compare what held.
+            Choose a single-turn demo target or the Phase 2 agentic mock router. Same casebook, same controls, richer tool-sequence evidence when agentic mode is active.
           </p>
         </div>
         <div style={{ background: `${profileColor}12`, border: `1px solid ${profileColor}55`, borderLeft: `3px solid ${profileColor}`, borderRadius: 5, padding: 16 }}>
@@ -36,15 +37,20 @@ export default function HarnessHome({
           <div style={{ color: C.text2, fontSize: 13, lineHeight: 1.5, marginTop: 6 }}>{selectedCase?.title}</div>
           {contract?.control_verdict && (
             <div style={{ marginTop: 12, color: C[VERDICT_TONE[contract.control_verdict]] || C.text3, fontSize: 12, fontWeight: 900, fontFamily: C.mono }}>
-              LAST VERDICT: {contract.control_verdict}
+              LAST VERDICT: {contract.control_verdict}{contract.agentic_mode ? ' · AGENTIC' : ''}
             </div>
           )}
         </div>
       </section>
 
       <div style={{ background: C.signalBg, border: `1px solid ${C.signal}44`, borderLeft: `3px solid ${C.signal}`, borderRadius: 5, padding: '12px 14px', color: C.text2, fontSize: 13, lineHeight: 1.55 }}>
-        <strong style={{ color: C.signal }}>Demo target simulator:</strong> this Phase 1 path runs seeded, fake evidence only. No external endpoint is called and no real tool action executes.
+        <strong style={{ color: C.signal }}>Simulated harness:</strong> both run modes use seeded, fake evidence only. No external endpoint is called and no real tool action executes.
       </div>
+
+      <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 10 }}>
+        <RunModeButton C={C} icon={<FlaskConical size={15} />} active={runMode === 'control'} title="Control Demo Target" body="Single-turn deterministic target for Phase 1 evidence contracts." onClick={() => onRunModeChange('control')} />
+        <RunModeButton C={C} icon={<Bot size={15} />} active={runMode === 'agentic'} title="Agentic Mock Router" body="Multi-step simulated agent trace with tool authorization decisions." onClick={() => onRunModeChange('agentic')} />
+      </section>
 
       <section style={{ display: 'grid', gridTemplateColumns: 'minmax(280px, .85fr) minmax(0, 1.15fr)', gap: 18 }} className="harness-grid">
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -88,7 +94,7 @@ export default function HarnessHome({
               color: running ? C.text3 : C.ink, cursor: running ? 'wait' : 'pointer',
               fontSize: 13, fontWeight: 900, letterSpacing: 1.2, fontFamily: C.mono,
             }}>
-              {running ? 'RUNNING HARNESS...' : 'RUN DEMO TARGET'} <ChevronRight size={14} />
+              {running ? 'RUNNING HARNESS...' : runMode === 'agentic' ? 'RUN MOCK ROUTER' : 'RUN DEMO TARGET'} <ChevronRight size={14} />
             </button>
             <button onClick={onBackToLab} style={{
               display: 'inline-flex', alignItems: 'center', gap: 7, padding: '12px 15px', borderRadius: 4,
@@ -107,10 +113,34 @@ export default function HarnessHome({
           <ControlResultsPanel C={C} contract={contract} profiles={profiles} comparisonHistory={comparisonHistory} />
         </div>
         <div>
-          <EvidenceContractPanel C={C} contract={contract} />
+          {runMode === 'agentic' ? <AgenticTracePanel C={C} contract={contract} /> : <EvidenceContractPanel C={C} contract={contract} />}
         </div>
       </section>
+
+      {runMode === 'agentic' && contract?.agentic_mode && (
+        <section>
+          <PanelTitle C={C} label="Evidence Contract" />
+          <EvidenceContractPanel C={C} contract={contract} />
+        </section>
+      )}
     </main>
+  );
+}
+
+function RunModeButton({ C, icon, active, title, body, onClick }) {
+  return (
+    <button onClick={onClick} style={{
+      textAlign: 'left', display: 'flex', gap: 12, alignItems: 'flex-start', padding: '13px 14px', borderRadius: 5, cursor: 'pointer',
+      background: active ? C.copperBg : C.panel,
+      border: `1px solid ${active ? C.copper : C.border}`,
+      borderLeft: `3px solid ${active ? C.copper : 'transparent'}`,
+    }}>
+      <span style={{ color: active ? C.copper : C.text3, marginTop: 1 }}>{icon}</span>
+      <span>
+        <span style={{ display: 'block', color: active ? C.copper : C.text1, fontSize: 13, fontWeight: 900, marginBottom: 3 }}>{title}</span>
+        <span style={{ display: 'block', color: C.text2, fontSize: 12, lineHeight: 1.45 }}>{body}</span>
+      </span>
+    </button>
   );
 }
 
