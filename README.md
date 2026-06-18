@@ -135,6 +135,19 @@ ORPHEUS does not certify compliance with AIUC-1. It produces structured evidence
 
 ## Modes
 
+### Control Harness Mode
+
+Run the built-in deterministic demo target across four cases and four control profiles. This mode is the fastest way to demonstrate the core ORPHEUS promise: same adversarial scenario, different control posture, structured evidence contract.
+
+What it includes today:
+- Four seeded adversarial cases: indirect injection, unauthorized tool call, PII leakage, and system prompt extraction
+- Baseline, Partial Control, Reference Protected, and Custom profiles
+- Control-by-control results table
+- Evidence Contract panel with copy and JSON download
+- Profile comparison history for each case
+
+The Phase 1 demo target uses fake seeded data only. No external endpoint is called and no real tool action executes.
+
 ### API Target Mode
 
 Configure any OpenAI-compatible endpoint and API key. ORPHEUS sends the full adversarial probe suite as authenticated API requests to your target. The key is held in browser memory only — never written to storage, cleared on session end, transmitted solely to your configured endpoint.
@@ -149,7 +162,7 @@ Compatible providers: OpenAI, Anthropic, Azure OpenAI, Mistral, Groq, Together A
 5. Select a control profile and probe cluster
 6. Run
 
-### Agentic Evaluation Mode *(coming)*
+### Agentic Evaluation Mode *(Phase 2 foundation in progress)*
 
 Multi-turn conversation harness with mock tool router. Configure which tools the agent believes it has. ORPHEUS intercepts tool calls, returns controlled responses containing adversarial payloads, and evaluates the agent's subsequent behavior and tool call sequence.
 
@@ -165,6 +178,7 @@ Requires Chrome, Edge, or Arc on desktop with WebGPU enabled.
 
 ## What It Does
 
+- **Control Harness mode** — run deterministic control-validation cases against Baseline, Partial, Reference, and Custom profiles
 - **API target mode** — route probes to any OpenAI-compatible endpoint
 - **Control profiles** — Baseline, Partial Control, Reference Protected, Custom
 - **Control Gate** — generates different system prompt wrappers per profile
@@ -241,6 +255,7 @@ npm run preview
 - In-browser API key management (memory only, not persisted)
 - CompatGate soft-warning for non-WebGPU browsers (API mode unaffected)
 - Local WebLLM probe runner
+- Control Harness home screen for deterministic demo-target runs
 - Control profiles as functional harness layers
 - Evidence Contract structured boolean fields on every control-validation run
 - Control-by-control outcome display
@@ -251,12 +266,13 @@ npm run preview
 - Evidence-rich findings with run IDs, model metadata, retained responses, reviewer disposition
 - Markdown, JSON exports
 - AIUC-1, ISO/IEC 42001, EU AI Act, MITRE ATLAS, OWASP LLM Top 10, NIST AI RMF mappings
+- Phase 2 Authority Registry and mock tool router foundation
 
 ## What's Next
 
-- Agentic harness with mock tool router
-- Indirect injection probe cluster (AML.T0051.001)
-- Authority Registry (configurable tool allowlist)
+- Agentic harness UI for mock tool-router runs
+- Indirect injection probe cluster expansion (AML.T0051.001)
+- Configurable Authority Registry editor
 - AIUC-1 evidence export format
 
 ## Later
