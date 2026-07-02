@@ -164,7 +164,7 @@ Compatible providers: OpenAI, Anthropic, Azure OpenAI, Mistral, Groq, Together A
 1. Open Case Setup → select **API ENDPOINT** mode
 2. Enter your endpoint URL (for example, OpenAI-compatible `https://api.openai.com/v1/chat/completions` or Anthropic native `https://api.anthropic.com/v1/messages`)
 3. Enter your API key — memory only, never persisted
-4. Enter the model identifier
+4. Enter the model identifier, such as `gpt-4o-mini` for OpenAI or `claude-haiku-4-5` for Anthropic
 5. Select a control profile and probe cluster
 6. Run
 

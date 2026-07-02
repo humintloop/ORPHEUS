@@ -56,12 +56,20 @@ function buildBody({ provider, modelId, messages, temperature, max_tokens, strea
   return { model: modelId, messages, temperature, max_tokens, stream };
 }
 
-async function readErrorMessage(response) {
+function formatProviderError(message, provider) {
+  if (provider === PROVIDERS.ANTHROPIC && /\bmodel\b/i.test(message)) {
+    return `${message}. For Anthropic native /v1/messages, try a current Claude API model ID such as claude-haiku-4-5 or the pinned claude-haiku-4-5-20251001.`;
+  }
+  return message;
+}
+
+async function readErrorMessage(response, provider) {
   try {
     const body = await response.json();
-    return body?.error?.message || body?.message || `${response.status} ${response.statusText}`;
+    const message = body?.error?.message || body?.message || `${response.status} ${response.statusText}`;
+    return formatProviderError(message, provider);
   } catch {
-    return `${response.status} ${response.statusText}`;
+    return formatProviderError(`${response.status} ${response.statusText}`, provider);
   }
 }
 
@@ -115,7 +123,7 @@ export class APITargetAdapter {
     const body = buildBody({ provider: this.provider, modelId: this.modelId, messages, temperature, max_tokens, stream });
 
     const response = await fetch(url, { method: 'POST', headers, body: JSON.stringify(body) });
-    if (!response.ok) throw new Error(await readErrorMessage(response));
+    if (!response.ok) throw new Error(await readErrorMessage(response, this.provider));
 
     if (!stream) {
       const data = await response.json();

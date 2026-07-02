@@ -117,7 +117,7 @@ const JUDGE_MODEL_SETTINGS = { temperature: 0.1, max_tokens: 150 };
 const DIFFICULTY_COLOR = { low: C.text3, medium: C.copperDim, high: C.copper };
 const API_PROVIDER_EXAMPLES = [
   { label: 'OpenAI', endpoint: 'https://api.openai.com/v1/chat/completions', model: 'gpt-4o-mini' },
-  { label: 'Anthropic', endpoint: 'https://api.anthropic.com/v1/messages', model: 'claude-3-5-haiku-latest' },
+  { label: 'Anthropic', endpoint: 'https://api.anthropic.com/v1/messages', model: 'claude-haiku-4-5' },
   { label: 'Generic', endpoint: 'https://your-gateway.example.com/v1/chat/completions', model: 'model-id' },
 ];
 
