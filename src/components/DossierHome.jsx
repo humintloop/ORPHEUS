@@ -26,7 +26,7 @@ function groupFindingsByCluster(findings = [], clusters = []) {
   return Object.entries(counts).sort((a, b) => b[1] - a[1]);
 }
 
-export default function DossierHome({ C, findings, clusters, activeCase, onEnter, onHarness, onResume, onReport }) {
+export default function DossierHome({ C, findings, clusters, activeCase, onQuick, onEnter, onHarness, onResume, onReport }) {
   const cases = groupFindingsByCase(findings);
   const coverage = groupFindingsByCluster(findings, clusters);
   const hasFindingsNeedingReview = cases.some(c => c.needsReview);
@@ -50,18 +50,21 @@ export default function DossierHome({ C, findings, clusters, activeCase, onEnter
       {/* Hero */}
       <section>
         <div style={{ fontSize: 11, color: C.text3, letterSpacing: 2, textTransform: 'uppercase', marginBottom: 10 }}>
-          Local-first adversarial assurance
+          API-connected adversarial assurance
         </div>
         <h1 style={{ fontFamily: "'Rajdhani', sans-serif", fontSize: 52, color: C.copper, fontWeight: 700, letterSpacing: 10, lineHeight: 1, margin: 0 }}>ORPHEUS</h1>
         <p style={{ fontSize: 16, color: C.text2, lineHeight: 1.7, maxWidth: 540, marginTop: 14, marginBottom: 0 }}>
-          Red-team LLMs in the browser. Preserve the evidence. Map the control gap.
+          Test production endpoints and agent control postures. Preserve the evidence. Map the control gap.
         </p>
         <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', marginTop: 24 }}>
-          <button onClick={onHarness} style={primaryBtn(C)}>
-            <ShieldCheck size={15} /> CONTROL HARNESS <ChevronRight size={15} />
+          <button onClick={onQuick} style={primaryBtn(C)}>
+            <ShieldCheck size={15} /> QUICK ENDPOINT TEST <ChevronRight size={15} />
           </button>
           <button onClick={onEnter} style={ghostBtn(C)}>
-            MODEL LAB <ChevronRight size={15} />
+            ASSURANCE ASSESSMENT <ChevronRight size={15} />
+          </button>
+          <button onClick={onHarness} style={ghostBtn(C)}>
+            DEMO HARNESS <ChevronRight size={15} />
           </button>
           {findings.length > 0 && (
             <button onClick={onReport} style={ghostBtn(C)}>
@@ -132,7 +135,7 @@ export default function DossierHome({ C, findings, clusters, activeCase, onEnter
       {/* Empty state hint */}
       {findings.length === 0 && (
         <div style={{ fontSize: 13, color: C.text3, lineHeight: 1.6 }}>
-          No findings yet — open the Control Harness for deterministic control evidence, or use the Model Lab for local/API model probing.
+          No findings yet — open the Demo Harness for seeded training evidence, or use API Endpoint to probe an authorized target.
         </div>
       )}
     </main>

@@ -24,11 +24,11 @@ export default function HarnessHome({
       <section style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1.1fr) minmax(280px, .9fr)', gap: 22 }} className="harness-grid">
         <div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: C.text3, fontSize: 11, letterSpacing: 1.8, textTransform: 'uppercase', marginBottom: 10 }}>
-            <ShieldCheck size={14} /> Phase 1 Control Validation Harness
+            <ShieldCheck size={14} /> Demo / Training Control Harness
           </div>
-          <h1 style={{ margin: 0, color: C.copper, fontSize: 34, lineHeight: 1.1, fontWeight: 900, letterSpacing: .4 }}>Run the same attack against different control postures.</h1>
+          <h1 style={{ margin: 0, color: C.copper, fontSize: 34, lineHeight: 1.1, fontWeight: 900, letterSpacing: .4 }}>Run seeded attacks against different control postures.</h1>
           <p style={{ margin: '12px 0 0', color: C.text2, fontSize: 14, lineHeight: 1.65, maxWidth: 650 }}>
-            Choose a single-turn demo target or the Phase 2 agentic mock router. Same casebook, same controls, richer tool-sequence evidence when agentic mode is active.
+            Use this mode for demos, training, and control-posture walkthroughs. Same casebook, same controls, richer tool-sequence evidence when agentic mode is active.
           </p>
         </div>
         <div style={{ background: `${profileColor}12`, border: `1px solid ${profileColor}55`, borderLeft: `3px solid ${profileColor}`, borderRadius: 5, padding: 16 }}>
@@ -44,7 +44,7 @@ export default function HarnessHome({
       </section>
 
       <div style={{ background: C.signalBg, border: `1px solid ${C.signal}44`, borderLeft: `3px solid ${C.signal}`, borderRadius: 5, padding: '12px 14px', color: C.text2, fontSize: 13, lineHeight: 1.55 }}>
-        <strong style={{ color: C.signal }}>Simulated harness:</strong> both run modes use seeded, fake evidence only. No external endpoint is called and no real tool action executes.
+        <strong style={{ color: C.signal }}>Training evidence only:</strong> both run modes use seeded, fake evidence. No external endpoint is called and no real tool action executes.
       </div>
 
       <section style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: 10 }}>
@@ -101,7 +101,7 @@ export default function HarnessHome({
               border: `1px solid ${C.borderHi}`, background: 'transparent', color: C.text2, cursor: 'pointer',
               fontSize: 12, fontWeight: 800, letterSpacing: .8, fontFamily: C.mono,
             }}>
-              OPEN MODEL LAB
+              OPEN API ENDPOINT
             </button>
           </div>
         </div>

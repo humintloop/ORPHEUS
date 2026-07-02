@@ -1,6 +1,6 @@
 control_set:
-  id: ELICIT-LLM-SAAS
-  name: ELICIT LLM SaaS Security and Assurance Control Set
+  id: ORPHEUS-LLM-SAAS
+  name: ORPHEUS LLM SaaS Security and Assurance Control Set
   version: 0.1.0
   status: draft-project-defined
   owner_note: >

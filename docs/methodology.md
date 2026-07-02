@@ -22,4 +22,6 @@ Some research findings involve visible reasoning or thinking traces. This lab ev
 
 ## Scope and limits
 
-The lab evaluates local model behavior and does not prove exploitability against a production system. Results vary by model, quantization, prompt, temperature, context, and runtime. Framework mappings (MITRE ATLAS, OWASP LLM Top 10, ISO 42001, EU AI Act) are relevance mappings for traceability and education. They are not audit conclusions, certification evidence, or findings of noncompliance.
+ORPHEUS has three evidence boundaries. API Endpoint mode evaluates the configured endpoint behavior under the supplied prompt and probes, but does not test provider infrastructure. Demo Harness mode uses seeded fake evidence for training and control-posture walkthroughs. Local Model Lab mode evaluates browser-hosted model behavior and does not prove exploitability against a deployed production system.
+
+Results vary by model, provider, runtime, quantization, prompt, temperature, context, and provider-side filtering. Browser-local evidence records are useful review artifacts, but they are not immutable audit trails unless exported into a controlled evidence system. Framework mappings (MITRE ATLAS, OWASP LLM Top 10, ISO 42001, EU AI Act) are relevance mappings for traceability and education. They are not audit conclusions, certification evidence, or findings of noncompliance.

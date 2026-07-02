@@ -135,7 +135,13 @@ ORPHEUS does not certify compliance with AIUC-1. It produces structured evidence
 
 ## Modes
 
-### Control Harness Mode
+### Quick Endpoint Test
+
+Run a fast adversarial smoke test against an authorized API endpoint with minimal setup: endpoint URL, API key, model ID, optional system prompt, and a probe pack. This is the default first-run path for teams that want to test an endpoint without completing the fuller assurance workflow.
+
+Quick results can be promoted into an Assurance Assessment when a team needs reviewer workflow, control mapping, and richer reporting.
+
+### Demo Harness Mode
 
 Run the built-in deterministic demo target across four cases and four control profiles. This mode is the fastest way to demonstrate the core ORPHEUS promise: same adversarial scenario, different control posture, structured evidence contract.
 
@@ -155,8 +161,8 @@ Configure any OpenAI-compatible endpoint and API key. ORPHEUS sends the full adv
 Compatible providers: OpenAI, Anthropic, Azure OpenAI, Mistral, Groq, Together AI, any OpenAI-compatible deployment.
 
 **Setup:**
-1. Open Case Setup → select **API TARGET** mode
-2. Enter your endpoint URL (e.g. `https://api.anthropic.com/v1/chat/completions`)
+1. Open Case Setup → select **API ENDPOINT** mode
+2. Enter your endpoint URL (for example, OpenAI-compatible `https://api.openai.com/v1/chat/completions` or Anthropic native `https://api.anthropic.com/v1/messages`)
 3. Enter your API key — memory only, never persisted
 4. Enter the model identifier
 5. Select a control profile and probe cluster
@@ -168,9 +174,9 @@ Multi-turn conversation harness with mock tool router. Configure which tools the
 
 No real tool calls are executed. The mock router tests the indirect injection attack surface — where most real-world agent compromises occur — without network access, file system access, or external API calls beyond the agent model itself.
 
-### Local Model Mode (WebGPU)
+### Local Model Lab (WebGPU)
 
-Run the full probe suite against a local browser-based model via WebLLM and WebGPU. No external inference calls after initial model download. Findings stored locally.
+Run the full probe suite against a local browser-based model via WebLLM and WebGPU. This is the legacy ELICIT-style training and exploration path. No external inference calls after initial model download. Findings stored locally.
 
 Requires Chrome, Edge, or Arc on desktop with WebGPU enabled.
 
@@ -178,8 +184,9 @@ Requires Chrome, Edge, or Arc on desktop with WebGPU enabled.
 
 ## What It Does
 
-- **Control Harness mode** — run deterministic control-validation cases against Baseline, Partial, Reference, and Custom profiles
-- **API target mode** — route probes to any OpenAI-compatible endpoint
+- **Demo Harness mode** — run deterministic control-validation cases against Baseline, Partial, Reference, and Custom profiles
+- **Quick Endpoint Test** — run a minimal endpoint smoke test without GRC setup
+- **API endpoint mode** — route probes to authorized OpenAI-compatible or Anthropic-native endpoints
 - **Control profiles** — Baseline, Partial Control, Reference Protected, Custom
 - **Control Gate** — generates different system prompt wrappers per profile
 - **Evidence Contract** — structured boolean fields on every run, not just prose verdicts
@@ -223,7 +230,7 @@ npm run dev
 
 Open `http://localhost:5173` in Chrome or Edge.
 
-API target mode does not require WebGPU. If WebGPU is unavailable, a warning banner is shown and API target mode remains accessible.
+API endpoint mode does not require WebGPU. If WebGPU is unavailable, a warning banner is shown and API endpoint mode remains accessible.
 
 ---
 
@@ -251,11 +258,11 @@ npm run preview
 
 ## What's Implemented
 
-- API target mode (OpenAI-compatible, supports Anthropic, OpenAI, Groq, Azure, generic)
+- API endpoint mode (OpenAI-compatible plus Anthropic native, supports OpenAI, Anthropic, Groq, Azure, generic gateways)
 - In-browser API key management (memory only, not persisted)
 - CompatGate soft-warning for non-WebGPU browsers (API mode unaffected)
 - Local WebLLM probe runner
-- Control Harness home screen for deterministic demo-target runs
+- Demo Harness home screen for deterministic demo-target runs
 - Control profiles as functional harness layers
 - Evidence Contract structured boolean fields on every control-validation run
 - Control-by-control outcome display
@@ -289,7 +296,7 @@ npm run preview
 
 ORPHEUS is intended for authorized AI security testing, internal assurance, education, and control validation of systems you own or have explicit permission to evaluate.
 
-When using API target mode:
+When using API endpoint mode:
 - Use scoped or disposable test keys
 - Avoid production secrets
 - Test only authorized endpoints

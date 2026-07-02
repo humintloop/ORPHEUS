@@ -34,6 +34,40 @@ const frameworkList = (finding = {}) => {
   return lines.length ? lines.join('\n') : '- None mapped';
 };
 
+const runModeLabel = (finding = {}) => {
+  if (finding.assessmentMode === 'quick') return 'Quick Endpoint Test';
+  if (finding.targetModeLabel) return finding.targetModeLabel;
+  if (finding.targetMode === 'api' || /api target|fetch/i.test(finding.victimRuntime || '')) return 'API Endpoint';
+  if (finding.targetMode === 'local' || /webgpu|webllm|browser-hosted/i.test(finding.victimRuntime || '')) return 'Local Model Lab';
+  if (finding.simulated_only || finding.simulatedOnly) return 'Demo Harness';
+  return 'Not recorded';
+};
+
+const evidenceBoundary = (finding = {}) => finding.evidenceBoundary
+  || (['API Endpoint', 'Quick Endpoint Test'].includes(runModeLabel(finding))
+    ? 'Authenticated browser fetch to configured endpoint; API key was held in memory only and not persisted by ORPHEUS.'
+    : runModeLabel(finding) === 'Local Model Lab'
+      ? 'Local browser WebGPU runtime; no external inference calls after model download.'
+      : 'Evidence boundary not recorded.');
+
+const summarizeRunModes = (findings = []) => {
+  const labels = [...new Set(findings.map(runModeLabel).filter(label => label !== 'Not recorded'))];
+  if (labels.length === 0) return 'No run source was recorded for the active findings.';
+  if (labels.length === 1 && labels[0] === 'API Endpoint') {
+    return 'This report summarizes adversarial probes sent from ORPHEUS to configured API endpoints. Evidence records are local browser records unless separately exported into an enterprise evidence system.';
+  }
+  if (labels.length === 1 && labels[0] === 'Quick Endpoint Test') {
+    return 'This report summarizes a fast adversarial smoke test sent from ORPHEUS to a configured API endpoint. Evidence records are local browser records unless separately exported into an enterprise evidence system.';
+  }
+  if (labels.length === 1 && labels[0] === 'Local Model Lab') {
+    return 'This report summarizes local browser-model evaluations. Local lab results are useful for training and exploration, but do not by themselves validate a production endpoint or deployed agent boundary.';
+  }
+  if (labels.length === 1 && labels[0] === 'Demo Harness') {
+    return 'This report summarizes seeded demo harness evidence. Demo harness evidence is for training and control walkthroughs only; it does not come from a live endpoint.';
+  }
+  return `This report summarizes mixed evidence sources: ${labels.join(', ')}. Interpret each finding according to its recorded run source and evidence boundary.`;
+};
+
 export function buildFindingMarkdown(finding) {
   const controls = finding.selectedControlIds || finding.mappedControls || finding.mapped_controls || [];
   const mitigation = getMitigationMapping(finding.techniqueId);
@@ -63,9 +97,12 @@ export function buildFindingMarkdown(finding) {
 **Technique:** ${finding.techniqueId || 'Unmapped'} — ${finding.techniqueName || ''}<br>
 **OWASP:** ${finding.owasp || 'Unmapped'}<br>
 **Victim Model:** ${finding.victimModel || 'Not recorded'}<br>
+**Run Source:** ${runModeLabel(finding)}<br>
 **Runtime:** ${finding.victimRuntime || 'Not recorded'}<br>
+**Endpoint Origin:** ${finding.targetEndpointOrigin || 'Not recorded'}<br>
 **Timestamp:** ${finding.timestamp || 'Not recorded'}
 
+${section('Evidence Boundary', evidenceBoundary(finding))}
 ${section('Case Description', finding.caseDescription || finding.description)}
 ${section('Objective', finding.objective)}
 ${section('Expected Secure Behavior', finding.expectedSecureBehavior || finding.expected_secure_behavior)}
@@ -137,7 +174,9 @@ Mitigation Set Version: ${MITIGATION_SET_VERSION}
 
 ## Executive Summary
 
-This report summarizes locally executed adversarial evaluation cases against one or more browser-hosted LLMs. The lab treats findings as **evidence indicators**: a successful or partial adversarial result indicates a potential control weakness that should be reviewed, reproduced, remediated, and retested. Framework mappings are provided for traceability and do not constitute legal, audit, or certification conclusions.
+${summarizeRunModes(activeFindings)}
+
+ORPHEUS treats findings as **evidence indicators**: a successful or partial adversarial result indicates a potential control weakness that should be reviewed, reproduced, remediated, and retested. Framework mappings are provided for traceability and do not constitute legal, audit, or certification conclusions.
 
 - Findings logged: ${findings.length}
 - Successful or partial findings, excluding reviewer-marked false positives: ${successful}
@@ -156,10 +195,10 @@ EU AI Act scope status: ${ASSURANCE_PROFILE.eu_ai_act_scope.default_status}. ${A
 
 The evaluation workflow is:
 
-1. Select a victim system prompt and local WebLLM model.
-2. Run a structured adversarial evaluation case.
-3. Capture the model response and local heuristic result.
-4. Optionally run a separate local judge model.
+1. Select an authorized target mode: API Endpoint, Local Model Lab, or seeded Demo Harness.
+2. Configure the target system prompt, model identifier, and probe family.
+3. Run a structured adversarial evaluation case.
+4. Capture the target response, heuristic result, and any configured judge or reviewer signal.
 5. Log an evidence record with response excerpts, evaluator outputs, reviewer disposition, control mapping, and framework relevance.
 
 ## Impacted Control Summary
@@ -172,10 +211,13 @@ ${activeFindings.length ? activeFindings.map(buildFindingMarkdown).join('\n---\n
 
 ## Limitations
 
-- This lab evaluates local model behavior and does not prove exploitability against production systems.
-- Results can vary by model, quantization, prompt, temperature, context, and runtime.
-- Browser inference is constrained by local hardware, WebGPU support, cache storage, browser profile state, and tab lifecycle behavior.
-- First-run model downloads and judge-mode model swaps can temporarily pause the page while model artifacts download, compile, or reload.
+- API Endpoint mode tests the configured endpoint behavior under the supplied prompt and probes. It does not test the provider infrastructure itself.
+- Demo Harness evidence uses seeded fake data and simulated tool behavior only.
+- Local Model Lab behavior does not by itself prove exploitability against a deployed production system.
+- Results can vary by model, provider, runtime, quantization, prompt, temperature, context, and provider-side filtering.
+- Browser-stored evidence records are not immutable audit trails unless exported into a controlled evidence system.
+- Local browser inference is constrained by hardware, WebGPU support, cache storage, browser profile state, and tab lifecycle behavior.
+- First-run model downloads and local judge-mode model swaps can temporarily pause the page while model artifacts download, compile, or reload.
 - The heuristic evaluator is triage-oriented; \`REVIEW\` or \`PARTIAL\` should not be treated as a final pass/fail conclusion.
 - Official mitigation references preserve source IDs and names from MITRE ATLAS. ORPHEUS recommended actions and retest guidance are project-defined implementation guidance.
 - LLM-as-judge mode can introduce evaluator bias or prompt-injection risk; judge outputs should be treated as supporting evidence, not ground truth.
@@ -223,6 +265,8 @@ export function generateAuditBriefHtml(findings = [], metadata = {}) {
         <p><b>System Under Test</b>${escapeHtml(finding.systemUnderTest || 'Not recorded')}</p>
         <p><b>Case ID</b>${escapeHtml(finding.caseFileId || finding.caseId || 'Not recorded')}</p>
         <p><b>Model</b>${escapeHtml(finding.victimModel || 'Not recorded')}</p>
+        <p><b>Run Source</b>${escapeHtml(runModeLabel(finding))}</p>
+        <p><b>Evidence Boundary</b>${escapeHtml(evidenceBoundary(finding))}</p>
         <p><b>System Prompt Hash</b>${escapeHtml(finding.promptHash || 'Not recorded')}</p>
         <p><b>Controls</b>${escapeHtml(controlsText || 'Not recorded')}</p>
       </div>
@@ -261,7 +305,7 @@ pre{white-space:pre-wrap;background:#0A0C16;border:1px solid #1C2238;padding:12p
 </style>
 </head>
 <body>
-<div class="banner">UNCLASSIFIED // AI ASSURANCE WORKPAPER // LOCAL-FIRST EVIDENCE</div>
+<div class="banner">UNCLASSIFIED // AI ASSURANCE WORKPAPER // ORPHEUS EVIDENCE</div>
 <main>
   <h1>ORPHEUS AUDIT BRIEF</h1>
   <div class="meta">
@@ -271,7 +315,7 @@ pre{white-space:pre-wrap;background:#0A0C16;border:1px solid #1C2238;padding:12p
     <p><b>Impacted Controls</b>${controls.map(c => escapeHtml(`${c.id} ${c.name}`)).join('<br>') || 'None recorded'}</p>
   </div>
   ${rows || '<p>No active findings recorded.</p>'}
-  <p class="foot">Framework mappings are traceability aids and do not constitute legal, audit, or certification conclusions. Evidence was generated locally in the browser.</p>
+  <p class="foot">Framework mappings are traceability aids and do not constitute legal, audit, or certification conclusions. Evidence records are browser-local unless exported into a controlled evidence system; interpret each finding according to its run source.</p>
 </main>
 </body>
 </html>`;

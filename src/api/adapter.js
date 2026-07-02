@@ -1,4 +1,4 @@
-// Fetch-based replacement for the WebLLM MLCEngine when running in API target mode.
+// Fetch-based replacement for the WebLLM MLCEngine when running in API Endpoint mode.
 // `endpoint` must be the full request URL (e.g. "https://api.openai.com/v1/chat/completions"
 // or "https://api.anthropic.com/v1/messages") — it is used exactly as given, nothing is appended.
 // The API key is held only as an instance field; it is never written to storage.

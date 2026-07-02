@@ -1,6 +1,6 @@
 # Source Ledger
 
-This ledger records the sources used for ELICIT mappings and control-language decisions.
+This ledger records the sources used for ORPHEUS mappings and control-language decisions.
 It is a traceability aid, not a legal or audit conclusion.
 
 See [`../ATTRIBUTION.md`](../ATTRIBUTION.md) for concise third-party attribution and license/source notes.
@@ -22,7 +22,7 @@ See [`../ATTRIBUTION.md`](../ATTRIBUTION.md) for concise third-party attribution
 | ISO-42001-OFFICIAL | ISO/IEC 42001:2023 source page | `https://www.iso.org/standard/42001` | AIMS purpose, applicability, and management-system context | Official source / high-level context | 2026-06-15 |
 | ISO-42001-SECTION9-WORKING | User-provided ISO 42001 mapping notes | `sunilp/ai-governance-framework`, `framework/compliance/iso-42001-mapping.md` | Section 9 labels for monitoring/measurement, internal audit, and management review | Third-party implementation guide / inferred mapping | 2026-06-15 |
 | EU-AI-ACT-2024 | Regulation (EU) 2024/1689 | `https://eur-lex.europa.eu/eli/reg/2024/1689/oj` | High-risk readiness references for risk management, logging, oversight, robustness/cybersecurity, QMS, post-market monitoring, and critical infrastructure scope | Official source / relevance mapping | 2026-06-15 |
-| ELICIT-CONTROLS | ELICIT project-defined SaaS LLM control set | `controls/llm-saas-control-set.yaml` | Control objectives, evidence examples, test methods, retest guidance | Project-defined control | 2026-06-14 |
+| ORPHEUS-CONTROLS | ORPHEUS project-defined SaaS LLM control set | `controls/llm-saas-control-set.yaml` | Control objectives, evidence examples, test methods, retest guidance | Project-defined control | 2026-06-14 |
 
 ## MITRE ATLAS Technique References
 
@@ -59,10 +59,10 @@ See [`../ATTRIBUTION.md`](../ATTRIBUTION.md) for concise third-party attribution
 
 ## Project-Defined Mapping Notes
 
-- The ELICIT controls are **not** MITRE, OWASP, NIST, ISO, CSA, or EU AI Act controls.
+- The ORPHEUS controls are **not** MITRE, OWASP, NIST, ISO, CSA, or EU AI Act controls.
 - MITRE and OWASP entries are used as source-grounded risk and technique references.
 - Mappings from MITRE/OWASP entries to `LLM-*` controls are project-defined and should be treated as inferred unless a future source explicitly defines the relationship.
-- MITRE ATLAS mitigation references preserve official mitigation IDs and names. ELICIT recommended actions and retest guidance are project-defined implementation guidance.
+- MITRE ATLAS mitigation references preserve official mitigation IDs and names. ORPHEUS recommended actions and retest guidance are project-defined implementation guidance.
 - ISO/IEC 42001, NIST AI RMF, and EU AI Act references in the app are relevance indicators only. They are not compliance determinations.
 - ISO/IEC 42001 section 9 references are used to frame performance-evaluation evidence: monitoring and measurement, internal audit, and management review.
 - EU AI Act references use a SaaS / critical digital infrastructure readiness lens for CDN, edge, cybersecurity, cloud, and critical digital infrastructure SaaS providers. High-risk status depends on actual system role, intended purpose, jurisdiction, and whether the AI system is used as a safety component or falls into another high-risk category.
