@@ -159,6 +159,20 @@ const getEndpointOrigin = (endpoint = '') => {
   try { return new URL(endpoint).origin; } catch { return endpoint.trim() ? 'custom endpoint' : ''; }
 };
 
+const matchesProviderExample = (example, endpoint = '', modelId = '') => (
+  endpoint.trim() === example.endpoint && modelId.trim() === example.model
+);
+
+const applyProviderExample = (example, setApiEndpoint, setApiModelId) => {
+  setApiEndpoint(example.endpoint);
+  setApiModelId(example.model);
+};
+
+const modelPlaceholderForEndpoint = (endpoint = '') => {
+  const match = API_PROVIDER_EXAMPLES.find(example => example.endpoint === endpoint.trim());
+  return match?.model || 'model-id';
+};
+
 const buildQuickProbeQueue = (packId = 'quick') => {
   const pack = QUICK_PROBE_PACKS.find(item => item.id === packId) || QUICK_PROBE_PACKS[0];
   const entries = [];
@@ -1595,9 +1609,11 @@ function QuickEndpointSetup({
           {label('Endpoint')}
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 8 }}>
             {API_PROVIDER_EXAMPLES.map(example => (
-              <button key={example.label} type="button" onClick={() => { setApiEndpoint(example.endpoint); if (!apiModelId.trim()) setApiModelId(example.model); }} style={{
+              <button key={example.label} type="button" onClick={() => applyProviderExample(example, setApiEndpoint, setApiModelId)} style={{
                 padding: '6px 10px', borderRadius: 3, cursor: 'pointer',
-                background: C.surface, color: C.text2, border: `1px solid ${C.border}`,
+                background: matchesProviderExample(example, apiEndpoint, apiModelId) ? C.copperBg : C.surface,
+                color: matchesProviderExample(example, apiEndpoint, apiModelId) ? C.copper : C.text2,
+                border: `1px solid ${matchesProviderExample(example, apiEndpoint, apiModelId) ? C.copper : C.border}`,
                 fontSize: 11, fontWeight: 800, letterSpacing: .5,
               }}>
                 {example.label}
@@ -1620,7 +1636,7 @@ function QuickEndpointSetup({
           <div>
             {label('Model ID')}
             <input type="text" value={apiModelId} onChange={e => setApiModelId(e.target.value)}
-              placeholder="gpt-4o-mini" autoComplete="off" style={inputStyle(C)} />
+              placeholder={modelPlaceholderForEndpoint(apiEndpoint)} autoComplete="off" style={inputStyle(C)} />
           </div>
         </div>
 
@@ -1786,9 +1802,11 @@ function CaseSetup({
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
                 {API_PROVIDER_EXAMPLES.map(example => (
-                  <button key={example.label} type="button" onClick={() => { setApiEndpoint(example.endpoint); if (!apiModelId.trim()) setApiModelId(example.model); }} style={{
+                  <button key={example.label} type="button" onClick={() => applyProviderExample(example, setApiEndpoint, setApiModelId)} style={{
                     padding: '5px 9px', borderRadius: 3, cursor: 'pointer',
-                    background: C.surface, color: C.text2, border: `1px solid ${C.border}`,
+                    background: matchesProviderExample(example, apiEndpoint, apiModelId) ? C.copperBg : C.surface,
+                    color: matchesProviderExample(example, apiEndpoint, apiModelId) ? C.copper : C.text2,
+                    border: `1px solid ${matchesProviderExample(example, apiEndpoint, apiModelId) ? C.copper : C.border}`,
                     fontSize: 11, fontWeight: 800, letterSpacing: .5,
                   }}>
                     {example.label}
@@ -1811,7 +1829,7 @@ function CaseSetup({
               <div>
                 <div style={{ fontSize: 11, color: C.text3, marginBottom: 4 }}>Model ID</div>
                 <input type="text" value={apiModelId} onChange={e => setApiModelId(e.target.value)}
-                  placeholder="gpt-4o-mini" autoComplete="off" style={inputStyle(C)} />
+                  placeholder={modelPlaceholderForEndpoint(apiEndpoint)} autoComplete="off" style={inputStyle(C)} />
               </div>
               <div style={{ fontSize: 11, color: C.text3, display: 'flex', alignItems: 'flex-start', gap: 5, lineHeight: 1.45 }}>
                 <AlertTriangle size={11} color={C.copperDim} style={{ marginTop: 2, flexShrink: 0 }} /> API key is held in memory for this session only, never saved to storage, and sent only to the configured endpoint.
